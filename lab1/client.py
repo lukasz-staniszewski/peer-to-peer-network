@@ -1,21 +1,32 @@
 import socket
 import sys
-import io
 
-HOST = '127.0.0.1' # The server's hostname or IP address
-# should check len(sys.argv), etc ...
-port = int( sys.argv[1] )
+HOST = "127.0.0.1"
 
-size = 80
-binary_stream = ''
+if len(sys.argv) < 2:
+    port = 8800
+    print("Setting default port: 8800")
+elif len(sys.argv) > 2:
+    print("Wrong parameters")
+    sys.exit(0)
+else:
+    try:
+        port = int(sys.argv[1])
+    except Exception as e:
+        print("Wrong Input Data!")
+        sys.exit(0)
 
+message = b'a'  # 1 byte message
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-    # binary_stream.write("Hello, world!\n".encode('ascii'))
-    # binary_stream.seek(0)
-    # stream_data = binary_stream.read()
-    stream_data = 'abcdef\n'.encode('ascii')
-    for i in range(10):
-        s.sendto( stream_data, (HOST, port) )
-        data = s.recv( size )
-        print('Received data=', repr(data), " size= ", size )
-print('Client finished.')
+    for i in range(13):
+        stream_data = message
+        try:
+            s.sendto(stream_data, (HOST, port))
+            data = s.recv(len(message))
+        except Exception as e:
+            print("Fatal error has occurred while receiving data from a server. Server might not be running.\n"
+                  "Shutting down a client.")
+            sys.exit(0)
+        message = message * 2
+        print(f"Received data={repr(data)} size={len(message)}")
+print("Client finished.")

@@ -1,26 +1,49 @@
 import socket
 import sys
 
-HOST = '127.0.0.1' # Standard loopback interface address 
+
+HOST = "127.0.0.1"
 BUFSIZE = 512
-# should check len(sys.argv), etc ...
-port = int( sys.argv[1] )
 
 
-print("Will listen on ", HOST, ":", port)
+if len(sys.argv) < 2:
+    port = 8800
+    print('Default port -> 8800')
+elif len(sys.argv) > 2:
+    print("Too many input data")
+    sys.exit(0)
+else:
+    try:
+        port = int( sys.argv[1] )
+    except Exception as e:
+        print("Wrong input data!")
+        sys.exit(0)
+
+
+print(f"Will listen on {HOST}:{port}")
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     s.bind((HOST, port))
-    i=1
+    i = 1
     while True:
-        data_address = s.recvfrom( BUFSIZE )
+        try:
+            data_address = s.recvfrom(BUFSIZE)
+        except Exception as e:
+            print("An error has occurred with the current client (too big datagram)")
+            #  ???
+            s.sendto(bytearray(0), address)
+            break
         data = data_address[0]
         address = data_address[1]
-        print( "Message from Client:{}".format(data) )
-        print( "Client IP Address:{}".format(address) )
+        print(f"Message from Client: {data}")
+        print(f"Client IP Address: {address}")
         if not data:
             print("Error in datagram?")
             break
-    # echo back data
-        s.sendto(data, address )
-        print('sending dgram #', i)
-        i+=1
+        # echo back data
+        try:
+            s.sendto(data, address)
+            print(f"sending dgram #{i}")
+        except Exception as e:
+            print("An error has occurred while sending data to a client")
+            break
+        i += 1
