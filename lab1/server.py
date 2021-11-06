@@ -3,7 +3,7 @@ import sys
 
 
 HOST = "127.0.0.1"
-BUFSIZE = 512
+BUFSIZE = 500_000
 
 
 if len(sys.argv) < 2:
@@ -29,21 +29,19 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             data_address = s.recvfrom(BUFSIZE)
         except Exception as e:
             print("An error has occurred with the current client (too big datagram)")
-            #  ???
-            s.sendto(bytearray(0), address)
             break
         data = data_address[0]
         address = data_address[1]
-        print(f"Message from Client: {data}")
+        print(f"Bytes from Client: {len(data)}")
         print(f"Client IP Address: {address}")
         if not data:
             print("Error in datagram?")
             break
-        # echo back data
-        try:
-            s.sendto(data, address)
-            print(f"sending dgram #{i}")
-        except Exception as e:
-            print("An error has occurred while sending data to a client")
-            break
+        # # echo back data
+        # try:
+        #     s.sendto(data, address)
+        #     print(f"sending dgram #{i}")
+        # except Exception as e:
+        #     print("An error has occurred while sending data to a client")
+        #     break
         i += 1

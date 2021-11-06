@@ -18,15 +18,12 @@ else:
 
 message = b'a'  # 1 byte message
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-    for i in range(13):
+    for i in range(20):
         stream_data = message
         try:
             s.sendto(stream_data, (HOST, port))
-            data = s.recv(len(message))
         except Exception as e:
-            print("Fatal error has occurred while receiving data from a server. Server might not be running.\n"
-                  "Shutting down a client.")
-            sys.exit(0)
+            print(f'An error has occurred while sending data to server! Shutting down a client.')
+            break
         message = message * 2
-        print(f"Received data={repr(data)} size={len(message)}")
 print("Client finished.")
