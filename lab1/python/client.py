@@ -23,7 +23,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         try:
             s.sendto(stream_data, (HOST, port))
         except Exception as e:
-            print(f'An error has occurred while sending data to server! Shutting down a client.')
+            print(f'An error has occurred while sending data to server! Shutting down a client.', e)
             break
         message = message * 2
 print("Client finished.")
