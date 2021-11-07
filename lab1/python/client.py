@@ -6,15 +6,19 @@ N_MESSAGES = 6
 def prepare_addr():
     if len(sys.argv) != 3:
         print(f"Usage is: {sys.argv[0]} <host> <port>")
-        sys.exit(0)
+        sys.exit(1)
     else:
         try:
-            port = int(sys.argv[2])
+            if int(sys.argv[2])>-1 and int(sys.argv[2])<65536:
+                port = int(sys.argv[2])
+            else:
+                print("Invalid port, should be in range 0-65535")
+                sys.exit(1)
             HOST = sys.argv[1]
             hp = socket.gethostbyname(HOST)
         except Exception as e:
             print("Wrong input data!")
-            sys.exit(0)
+            sys.exit(1)
 
     if hp != HOST:
         print(f"Unknown host {hp}, changing to 127.0.0.1")

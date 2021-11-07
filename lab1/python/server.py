@@ -10,10 +10,13 @@ def prepare_socket_address():
         sys.exit(0)
     if len(sys.argv) == 2:
         try:
-            port = int(sys.argv[1])
+            if int(sys.argv[1])>-1 and int(sys.argv[1])<65536:
+                port = int(sys.argv[1])
+            else:
+                port = 0
         except Exception as e:
             print("Invalid port!")
-            sys.exit(0)
+            sys.exit(1)
     else:
         print("Port not specified. Using random!")
         port = 0
@@ -28,7 +31,7 @@ def bind_socket(s, port):
         s.bind((HOST, port))
     except Exception as e:
         print("Error while binding")
-
+        sys.exit(1)
 
 def get_server_port_info(s):
     port = 0
@@ -36,6 +39,7 @@ def get_server_port_info(s):
         port = s.getsockname()
     except Exception as e:
         print("Error while getting socket name")
+        sys.exit(1)
 
     print(f"Will listen on {HOST}:{port}")
 
