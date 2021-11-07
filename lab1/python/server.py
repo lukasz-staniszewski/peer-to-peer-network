@@ -32,13 +32,12 @@ def bind_socket(s, port):
 
 def get_server_port_info(s):
     port = 0
-    with s:
-        try:
-            port = s.getsockname()
-        except Exception as e:
-            print("Error while getting socket name")
+    try:
+        port = s.getsockname()
+    except Exception as e:
+        print("Error while getting socket name")
 
-        print(f"Will listen on {HOST}:{port}")
+    print(f"Will listen on {HOST}:{port}")
 
 
 def run_server_reading(s):
