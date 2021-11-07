@@ -24,6 +24,10 @@ void prepare_socket_address(struct sockaddr_in* sock_addr, int argc, char *argv[
     }
     if(argc == 2){
         sock_addr->sin_port = htons(atoi(argv[1]));
+        if(sock_addr->sin_port == 0){
+            fprintf(stderr, "%s - unknown port\n", argv[1]);
+            exit(2);
+    }
     }
     else{
         printf("Port not specified, using random!\n");
