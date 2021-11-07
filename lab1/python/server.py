@@ -1,28 +1,27 @@
 import socket
 import sys
 
+BUFSIZE = 100
+HOST = '0.0.0.0'
 
-HOST = "127.0.0.1"
-BUFSIZE = 100_000
-
-
-if len(sys.argv) < 2:
-    port = 8800
-    print('Default port -> 8800')
-elif len(sys.argv) > 2:
-    print("Too many input data")
+if len(sys.argv) != 1 and len(sys.argv) != 2:
+    print("Usage is: nothing or <port>")
     sys.exit(0)
-else:
+if len(sys.argv) == 2:
     try:
         port = int(sys.argv[1])
     except Exception as e:
-        print("Wrong input data!")
+        print("Invalid port!")
         sys.exit(0)
+else:
+    print("Port not specified. Using random!")
+    port = 0
 
 
-print(f"Will listen on {HOST}:{port}")
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     s.bind((HOST, port))
+    port = s.getsockname()
+    print(f"Will listen on {HOST}:{port}")
     while True:
         try:
             data_address = s.recvfrom(BUFSIZE)
