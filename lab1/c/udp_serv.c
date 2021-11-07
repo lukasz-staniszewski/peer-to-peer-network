@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#define SIZE 100
+#define SIZE 40000
+
+// run by using ./udp_serv <port>
 
 int create_socket_udp(){
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -56,12 +58,16 @@ void get_server_port_info(int sock){
 void run_server_reading(int sock){
     char buf[SIZE];
     while(1){
+        memset(buf, 0, SIZE);
         int res = recv(sock, buf, SIZE, 0);
         if(res == -1){
             fprintf(stderr, "Error while reading from client\n");
             exit(5);
         }
-        printf("Received: %s\n", buf);
+        // for 1.1
+        // printf("Received %d bytes: %s\n", res, buf);     
+        // for 1.2
+        printf("Received %d bytes!\n", res);
     }
 }
 

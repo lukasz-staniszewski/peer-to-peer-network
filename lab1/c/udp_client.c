@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define SIZE 200000
+#define SIZE 70000
 #define N_MESSAGES 6
+
+// run by using ./udp_client <host> <port>
 
 int create_socket_udp(){
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -53,13 +55,17 @@ struct sockaddr_in prepare_addr(int argc, char *argv[]){
     hp = gethostbyname(argv[1]);
     
     if(hp == (struct hostent *) 0){
-        fprintf(stderr, "%s - unknown host, changing to 127.0.0.1\n", argv[1]);
+        printf("%s - unknown host, changing to 127.0.0.1\n", argv[1]);
         hp = gethostbyname("127.0.0.1");
     }
     
     server_addr.sin_family = AF_INET;
     memcpy((char *) &server_addr.sin_addr, (char *) hp->h_addr, hp->h_length);
     server_addr.sin_port = htons(atoi(argv[2]));
+    if(server_addr.sin_port == 0){
+        fprintf(stderr, "%s - unknown port\n", argv[2]);
+        exit(2);
+    }
     return server_addr;
 }
 
