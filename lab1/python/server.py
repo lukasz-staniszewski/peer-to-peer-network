@@ -55,7 +55,7 @@ def run_server_reading(s):
             data = data_address[0]
             address = data_address[1]
             print(f"Bytes from Client: {len(data)}")
-            print( "Message from Client:{}".format(data) ) 
+            print(f"Message from Client:{data}") 
             print(f"Client IP Address: {address}")
             if not data:
                 print("Error in datagram")
