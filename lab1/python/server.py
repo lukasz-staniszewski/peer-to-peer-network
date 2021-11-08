@@ -14,6 +14,7 @@ def prepare_socket_address():
                 port = int(sys.argv[1])
             else:
                 port = 0
+                print("Wrong port number. Using random!")
         except Exception as e:
             print("Invalid port!")
             sys.exit(1)
