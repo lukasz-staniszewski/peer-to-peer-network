@@ -222,7 +222,6 @@ if __name__ == '__main__':
 
     add_local_file('helloworlds.asm', my_files)
 
-    # TODO: Ta funkcja buguje dzialanie broadcastu np NWRS
     get_others_files(address, tcp_port)
 
     while True:
