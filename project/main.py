@@ -2,6 +2,7 @@ import socket
 import threading
 import pickle
 import time
+from tcp_module import TCPModule
 
 from structures.UDP_STR_RS import UDP_STR_RS
 from structures.UDP_STR_INFO import UDP_STR_INFO
@@ -11,9 +12,11 @@ from structures.TCP_STR_INFO import TCP_STR_INFO
 UDP_PERMITTED_MESS = ['GETS', 'NWRS', 'RMRS', 'NORS']
 TCP_PERMITTED_MESS = ['GETF', 'FILE', 'DECF', 'NDST', 'EMPS']
 
-address = '192.168.100.6'
-udp_port = 8888
-tcp_port = 2115
+# address = '192.168.100.6'
+address = '192.168.1.15'
+UDP_PORT = 8888
+TCP_PORT = 2115
+BUFFER_SIZE = 1024
 
 
 def prepare_my_files(address, udp_port, tcp_port):
@@ -28,7 +31,7 @@ def prepare_my_files(address, udp_port, tcp_port):
 def send_broadcast(mess):
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    server.sendto(mess, ('<broadcast>', udp_port))
+    server.sendto(mess, ('<broadcast>', UDP_PORT))
     print("BROADCAST sent!")
 
 
@@ -39,7 +42,7 @@ def add_local_file(filename, my_files):
     files.append(filename)
     my_files['files'] = files
     # Wyslij BROADCAST, ze dodalem plik --> 'NWRS' + UDP_STR_RS
-    port = tcp_port
+    port = TCP_PORT
 
     struc = UDP_STR_RS(address, port, filename)
     struc_pickled = pickle.dumps(struc)
@@ -56,9 +59,9 @@ def remove_local_file(filename, my_files):
         return False
     files.remove(filename)
     my_files['files'] = files
-    # Wyslij BROADCAST, ze dodalem plik --> 'NWRS' + UDP_STR_RS
-    address = my_files[0]
-    port = my_files[1]
+    # Wyslij BROADCAST, ze usunalem plik --> 'RMRS' + UDP_STR_RS
+    address = my_files['address']
+    port = my_files['udp_port']
 
     struc = UDP_STR_RS(address, filename, port)
     struc_pickled = pickle.dumps(struc)
@@ -76,7 +79,7 @@ def create_and_bind_udp_listener(udp_port):
 
 def create_and_bind_tcp_listener(tcp_port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('192.168.100.6', tcp_port))
+    s.bind(('192.168.1.15', tcp_port))
     return s
 
 
@@ -192,7 +195,14 @@ def tcp_listener(other_files, my_files, s):
         command = command.upper()
         if command == 'NDST':
             print(f'State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')
-            # TODO: Aktualizacja other_files
+            with lock:
+                add = payload.ip_address
+                port = payload.port
+                for filename in payload.data:
+                    add_to_others_files(other_files, filename, add, port)
+        if command == 'GETF':
+            pass
+            # TODO: wysyłanie pliku
         else:
             print(f'UNKNOWN COMMAND: {command}')
 
@@ -206,23 +216,25 @@ def get_others_files(address, tcp_port):
 
 if __name__ == '__main__':
     # address: ...   port: ...   files: ... (files na poczatku jest puste)
-    my_files = prepare_my_files(address, udp_port, tcp_port)
+    my_files = prepare_my_files(address, UDP_PORT, TCP_PORT)
 
-    udp_listener_socket = create_and_bind_udp_listener(udp_port)
+    udp_listener_socket = create_and_bind_udp_listener(UDP_PORT)
 
-    tcp_listener_socket = create_and_bind_tcp_listener(tcp_port)
+    # tcp_listener_socket = create_and_bind_tcp_listener(tcp_port)
+    tcp_module = TCPModule(TCP_PORT, BUFFER_SIZE)
 
     others_files = {}
 
     t_udp = threading.Thread(target=udp_listener, args=[others_files, udp_listener_socket])
     t_udp.start()
 
-    t_tcp = threading.Thread(target=tcp_listener, args=[others_files, my_files, tcp_listener_socket])
+    t_tcp = threading.Thread(target=tcp_module.start_listen)
+    # t_tcp = threading.Thread(target=tcp_listener, args=[others_files, my_files, tcp_listener_socket])
     t_tcp.start()
 
     add_local_file('helloworlds.asm', my_files)
 
-    get_others_files(address, tcp_port)
+    get_others_files(address, TCP_PORT)
 
     while True:
         print(others_files)
