@@ -7,30 +7,33 @@ LISTEN_PORT = 2115
 BUFFER_SIZE = 1024
 
 
-class File:
-    def __init__(self, name, data):
-        self.name = name
-        self.data = data
-
-
 class TCPModule:
-    def __init__(self, listen_port, buffer_size):
+    def __init__(self, listen_port=LISTEN_PORT, buffer_size=BUFFER_SIZE):
         self.LISTEN_ADDRESS = '0.0.0.0'
         self.LISTEN_PORT = listen_port
         self.BUFFER_SIZE = buffer_size
         self.listen_socket = None
 
     def prepare_socket_listen(self):
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind((self.LISTEN_ADDRESS, self.LISTEN_PORT))
-        server_socket.listen(5)
+        listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        listen_socket.bind((self.LISTEN_ADDRESS, self.LISTEN_PORT))
+        listen_socket.listen(5)
         print("Server listening at port " + str(self.LISTEN_PORT))
-        self.listen_socket = server_socket
+        self.listen_socket = listen_socket
+
+    def prepare_socket_send(self, address, port):
+        send_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            send_socket.connect((address, port))
+        except Exception as e:
+            print(f'Can\'t establish a connection with {address, port}')
+
+        return send_socket
 
     def send_data(self, socket_connection, data):
         try:
-            socket_connection.sendall(data.encode())
-            print("Send data :" + data)
+            socket_connection.sendall(data)
+            print("Send data :" + data.encode())
         except Exception as e:
             socket_connection.close()
             return e
@@ -44,7 +47,7 @@ class TCPModule:
             except Exception as e:
                 socket_connection.close()
                 return e
-            if msg_data[-1] == 4:
+            if not msg_data or msg_data[-1] == 4:
                 data = data + msg_data
                 break
 
@@ -94,6 +97,31 @@ class TCPModule:
             + ":"
             + str(client_address[1])
         )
+
+    def send_getf(self, send_socket, data):
+
+        result = self.send_data(send_socket, data)
+
+        if result != 0:
+            print("ERROR | Cant send data! " + str(result))
+            return
+
+        data = self.receive_data(send_socket)
+
+        if isinstance(data, Exception):
+            print("SERVER ERROR | Cant read data! " + str(data))
+            return
+
+        print("Received data: " + data.decode())
+
+        send_socket.close()
+
+    def send_ndst(self, send_socket, data):
+        result = self.send_data(send_socket, data)
+
+        if result != 0:
+            print("ERROR | Cant send data! " + str(result))
+            return
 
     def start_listen(self):
         self.prepare_socket_listen()

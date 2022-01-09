@@ -2,7 +2,8 @@ import socket
 import threading
 import pickle
 import time
-from tcp_module import TCPModule
+from TCPModule import TCPModule
+from Coordinator import Coordinator
 
 from structures.UDP_STR_RS import UDP_STR_RS
 from structures.UDP_STR_INFO import UDP_STR_INFO
@@ -77,12 +78,6 @@ def create_and_bind_udp_listener(udp_port):
     return s
 
 
-def create_and_bind_tcp_listener(tcp_port):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('192.168.1.15', tcp_port))
-    return s
-
-
 def add_to_others_files(others_files, filename, address, port):
     if filename in others_files.keys():
         curr_files = others_files[filename]
@@ -122,16 +117,13 @@ def remove_node_from_others_files(others_files, address, port):
         others_files.pop(key)
 
 
-def udp_listener(others_files, s):
+def udp_listener(others_files, s, coordinator):
     lock = threading.Lock()
     print('UDP Listener is running')
     while True:
         m = s.recv(1024)
         print('cos przyszlo na UDP')
-        command = m[0:4].decode()
-        payload = m[4:]
-        payload = pickle.loads(payload)
-        command = command.upper()
+        command, payload = coordinator.deserialize(m)
         # Ignorujemy BROADCASTA TO SAMYCH SIEBIE
         if payload.ip_address == address:
             command = 'SKIP'
@@ -141,17 +133,8 @@ def udp_listener(others_files, s):
             port = payload.port
             print(f'MAMY WYSLAC DO {payload.ip_address, payload.port}')
             # Teraz chcemy wyslac slownik my_files na dany adres
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
-                s.connect((add, port))
-            except Exception as e:
-                print(f'Can\'t establish a connection with {add, port}')
-
-            try:
-                mess = 'NDST'.encode()
-                struc = TCP_STR_CONT(add, port, None, ['elo.txt', 'abc.asm', 'google.jpg'])
-                struc_pickled = mess + pickle.dumps(struc)
-                s.sendall(struc_pickled)
+                coordinator.send_ndst(add, port)
             except Exception as e:
                 print('Failed to send data')
 
@@ -181,31 +164,6 @@ def udp_listener(others_files, s):
             print(f'Unknown command: {command}')
 
 
-def tcp_listener(other_files, my_files, s):
-    lock = threading.Lock()
-    s.listen(5)
-    print('TCP Listener is running')
-    while True:
-        conn, addr = s.accept()
-        print(conn)
-        m = conn.recv(1024)
-        command = m[0:4].decode()
-        payload = m[4:]
-        payload = pickle.loads(payload)
-        command = command.upper()
-        if command == 'NDST':
-            print(f'State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')
-            with lock:
-                add = payload.ip_address
-                port = payload.port
-                for filename in payload.data:
-                    add_to_others_files(other_files, filename, add, port)
-        if command == 'GETF':
-            pass
-            # TODO: wysyłanie pliku
-        else:
-            print(f'UNKNOWN COMMAND: {command}')
-
 
 def get_others_files(address, tcp_port):
     struc = UDP_STR_INFO(address, tcp_port)
@@ -220,16 +178,15 @@ if __name__ == '__main__':
 
     udp_listener_socket = create_and_bind_udp_listener(UDP_PORT)
 
-    # tcp_listener_socket = create_and_bind_tcp_listener(tcp_port)
     tcp_module = TCPModule(TCP_PORT, BUFFER_SIZE)
+    coordinator = Coordinator()
 
     others_files = {}
 
-    t_udp = threading.Thread(target=udp_listener, args=[others_files, udp_listener_socket])
+    t_udp = threading.Thread(target=udp_listener, args=[others_files, udp_listener_socket, coordinator])
     t_udp.start()
 
     t_tcp = threading.Thread(target=tcp_module.start_listen)
-    # t_tcp = threading.Thread(target=tcp_listener, args=[others_files, my_files, tcp_listener_socket])
     t_tcp.start()
 
     add_local_file('helloworlds.asm', my_files)
