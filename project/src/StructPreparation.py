@@ -17,3 +17,6 @@ class StructPreparation:
 
     def prepare_gets(self, addr, port):
         return 'GETS', UDP_STR_INFO(addr, port)
+
+    def prepare_file(self, addr, port, filename, data):
+        return 'FILE', TCP_STR_CONT(addr, port, filename, data)

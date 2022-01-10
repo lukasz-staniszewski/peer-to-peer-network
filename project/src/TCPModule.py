@@ -54,7 +54,7 @@ class TCPModule:
             data += msg_data
         return data
 
-    def listen_service(self, socket_connection, client_address):
+    def listen_service(self, socket_connection, client_address, coordinator):
         data_decoder = DataDeserializer()
         print(
             "SERVER INFO | Connection from "
@@ -76,15 +76,15 @@ class TCPModule:
         if command == 'GETF':
             print('GETF command received')
 
-            data_gen = DataGenerator()
-            data = data_gen.generate_data(1100)
+            result = coordinator.send_file(payload)
 
-            result = self.send_data(socket_connection, data)
             if result != 0:
                 print("SERVER ERROR | Cant send back data! " + str(result))
                 return
         elif command == 'NDST':
             print('NDST command received')
+            coordinator.add_other_files(payload)
+            print(coordinator.remote_state.others_files)
             print(f'State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')
             socket_connection.close()
         else:
@@ -123,7 +123,7 @@ class TCPModule:
             print("ERROR | Cant send data! " + str(result))
             return
 
-    def start_listen(self):
+    def start_listen(self, coordinator):
         self.listen_socket = self.prepare_socket_listen()
         while True:
             client_socket, client_address = self.listen_socket.accept()
@@ -132,6 +132,7 @@ class TCPModule:
                 args=(
                     client_socket,
                     client_address,
+                    coordinator,
                 ),
                 daemon=True,
             ).start()
