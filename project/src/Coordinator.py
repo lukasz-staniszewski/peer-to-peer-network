@@ -3,6 +3,7 @@ from .DataSerializer import DataSerializer
 from .StructPreparation import StructPreparation
 from .LocalStateModule import LocalStateModule
 from .RemoteStateModule import RemoteStateModule
+import random
 
 
 class Coordinator:
@@ -54,8 +55,28 @@ class Coordinator:
         self.tcp_module.send_ndst(send_socket, data)
 
     def send_file(self, payload):
-        file = self.local_state.gat_local_file(payload.file_name)
+        print(payload.file_name)
+        file = self.local_state.get_local_file(payload.file_name)
         command, payload = self.struct_preparation.prepare_file(self.address, self.tcp_port, file.name, file.data)
         data = self.serialize(command, payload)
         self.tcp_module.send_data(data)
+
+    def print_info(self):
+        print(f"UDP_PORT: {self.udp_port}, TCP_PORT: {self.tcp_port}, LOCAL_ADDRESS: {self.address}")
+
+
+    def download_file(self, filename):
+        addresses = self.remote_state.get_addresses_by_filename(filename)
+        print(filename)
+        print(addresses)
+        if addresses is not None:
+            send_params = random.choice(addresses)
+            send_address, send_port = send_params[0], send_params[1]
+            command, payload = self.struct_preparation.prepare_getf(self.address, self.tcp_port, filename)
+            data = self.serialize(command, payload)
+            send_socket = self.tcp_module.prepare_socket_send(send_address, send_port)
+            self.tcp_module.send_getf(send_socket, data)
+        else:
+            print('FILE DOESNT EXIST! CANNOT DOWNLOAD THAT FILE')
+
 

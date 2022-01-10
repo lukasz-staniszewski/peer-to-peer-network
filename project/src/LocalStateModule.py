@@ -23,7 +23,7 @@ class LocalStateModule:
     def get_local_files(self):
         return self.my_files
 
-    def gat_local_file(self, filename):
+    def get_local_file(self, filename):
         for file in self.my_files:
             if filename == file.name:
                 return file

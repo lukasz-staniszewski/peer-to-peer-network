@@ -1,7 +1,10 @@
 import threading
 import socket
 
-address = '192.168.0.81'
+
+hostname = socket.gethostname()
+local_ip = socket.gethostbyname(hostname)
+address = local_ip
 UDP_PORT = 8888
 BUFFER_SIZE = 1024
 UDP_PERMITTED_MESS = ['GETS', 'NWRS', 'RMRS', 'NORS']

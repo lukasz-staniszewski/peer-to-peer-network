@@ -37,3 +37,8 @@ class RemoteStateModule:
 
         for key in keys_to_delete:
             self.others_files.pop(key)
+
+    def get_addresses_by_filename(self, filename):
+        result = self.others_files[filename]
+        return self.others_files[filename]
+

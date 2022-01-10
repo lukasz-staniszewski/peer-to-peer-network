@@ -20,3 +20,6 @@ class StructPreparation:
 
     def prepare_file(self, addr, port, filename, data):
         return 'FILE', TCP_STR_CONT(addr, port, filename, data)
+
+    def prepare_getf(self, addr, port, filename):
+        return 'GETF', TCP_STR_INFO(addr, port, filename)
