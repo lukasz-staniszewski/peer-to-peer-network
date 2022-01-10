@@ -1,11 +1,10 @@
 import threading
 import time
-from TCPModule import TCPModule
-from UDPModule import UDPModule
-from Coordinator import Coordinator
+from src.TCPModule import TCPModule
+from src.UDPModule import UDPModule
+from src.Coordinator import Coordinator
 
-
-# address = '192.168.100.6'
+# trzeba zmienić jeszcze w UDPModel na ten moment jak zmieniasz
 address = '192.168.0.81'
 UDP_PORT = 8888
 TCP_PORT = 2115
@@ -13,7 +12,6 @@ BUFFER_SIZE = 1024
 
 if __name__ == '__main__':
     # address: ...   port: ...   files: ... (files na poczatku jest puste)
-    # my_files = prepare_my_files(address, UDP_PORT, TCP_PORT)
     coordinator = Coordinator(address, UDP_PORT, TCP_PORT)
 
     udp_module = UDPModule()

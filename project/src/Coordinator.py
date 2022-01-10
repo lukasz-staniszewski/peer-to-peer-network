@@ -1,10 +1,10 @@
-from DataDeserializer import DataDeserializer
-from DataSerializer import DataSerializer
-from TCPModule import TCPModule
-from StructPreparation import StructPreparation
-from LocalStateModule import LocalStateModule
-from RemoteStateModule import RemoteStateModule
-from UDPModule import UDPModule
+from .DataDeserializer import DataDeserializer
+from .DataSerializer import DataSerializer
+from .TCPModule import TCPModule
+from .StructPreparation import StructPreparation
+from .LocalStateModule import LocalStateModule
+from .RemoteStateModule import RemoteStateModule
+from .UDPModule import UDPModule
 
 
 class Coordinator:
