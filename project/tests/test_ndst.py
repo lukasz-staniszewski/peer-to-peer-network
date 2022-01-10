@@ -2,10 +2,10 @@ import pickle
 import time
 import socket
 
-from structures.TCP_STR_CONT import TCP_STR_CONT
-from structures.UDP_STR_RS import UDP_STR_RS
+from project.structures.TCP_STR_CONT import TCP_STR_CONT
+from project.structures.UDP_STR_RS import UDP_STR_RS
 
-address = '192.168.1.15'
+address = '192.168.0.81'
 port = 2115
 
 # TCP - wysylamy stan

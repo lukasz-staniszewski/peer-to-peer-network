@@ -1,7 +1,7 @@
 import socket
 import threading
-from DataGenerator import DataGenerator
-from DataDeserializer import DataDeserializer
+from project.src.DataGenerator import DataGenerator
+from project.src.DataDeserializer import DataDeserializer
 
 LISTEN_PORT = 2115
 BUFFER_SIZE = 1024
@@ -19,7 +19,7 @@ class TCPModule:
         listen_socket.bind((self.LISTEN_ADDRESS, self.LISTEN_PORT))
         listen_socket.listen(5)
         print("Server listening at port " + str(self.LISTEN_PORT))
-        self.listen_socket = listen_socket
+        return listen_socket
 
     def prepare_socket_send(self, address, port):
         send_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -124,7 +124,7 @@ class TCPModule:
             return
 
     def start_listen(self):
-        self.prepare_socket_listen()
+        self.listen_socket = self.prepare_socket_listen()
         while True:
             client_socket, client_address = self.listen_socket.accept()
             threading.Thread(

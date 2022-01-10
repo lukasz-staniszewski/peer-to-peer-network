@@ -1,0 +1,19 @@
+from project.structures.UDP_STR_RS import UDP_STR_RS
+from project.structures.UDP_STR_INFO import UDP_STR_INFO
+from project.structures.TCP_STR_CONT import TCP_STR_CONT
+from project.structures.TCP_STR_INFO import TCP_STR_INFO
+
+
+class StructPreparation:
+
+    def prepare_ndst(self, addr, port, ndst_data):
+        return 'NDST', TCP_STR_CONT(addr, port, None, ndst_data)
+
+    def prepare_rmrs(self, addr, port, filename):
+        return 'RMRS', UDP_STR_RS(addr, port, filename)
+
+    def prepare_nwrs(self, addr, port, filename):
+        return 'NWRS', UDP_STR_RS(addr, port, filename)
+
+    def prepare_gets(self, addr, port):
+        return 'GETS', UDP_STR_INFO(addr, port)

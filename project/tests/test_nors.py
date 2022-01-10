@@ -5,8 +5,8 @@ import threading
 import pickle
 import time
 
-from structures.UDP_STR_RS import UDP_STR_RS
-from structures.UDP_STR_INFO import UDP_STR_INFO
+from project.structures.UDP_STR_RS import UDP_STR_RS
+from project.structures.UDP_STR_INFO import UDP_STR_INFO
 
 # BROADCAST NORS
 

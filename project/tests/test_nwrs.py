@@ -5,7 +5,7 @@ import threading
 import pickle
 import time
 
-from structures.UDP_STR_RS import UDP_STR_RS
+from project.structures.UDP_STR_RS import UDP_STR_RS
 
 # BROADCAST NWRS
 
