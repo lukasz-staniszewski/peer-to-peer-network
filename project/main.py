@@ -24,6 +24,7 @@ def print_interface():
     4. SEE OTHERS FILES
     5. DOWNLOAD FILE
     6. NODE INFO
+    7. SHUTDOWN NODE & SEND BROADCAST
     """
     print(s)
 
@@ -70,3 +71,6 @@ if __name__ == '__main__':
         # 6. NODE INFO
         elif usr_input == 6:
             coordinator.print_info()
+        # 7. SHUTDOWN NODE & SEND BROADCAST --> NORS TEST
+        elif usr_input == 7:
+            coordinator.send_nors()

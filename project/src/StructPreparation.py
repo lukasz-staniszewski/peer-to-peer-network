@@ -23,3 +23,6 @@ class StructPreparation:
 
     def prepare_getf(self, addr, port, filename):
         return 'GETF', TCP_STR_INFO(addr, port, filename)
+
+    def prepare_nors(self, addr, port):
+        return 'NORS', UDP_STR_INFO(addr, port)

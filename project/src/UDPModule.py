@@ -35,7 +35,6 @@ class UDPModule:
         print('UDP Listener is running')
         while True:
             m = self.udp_socket.recv(1024)
-            print('cos przyszlo na UDP')
             command, payload = coordinator.deserialize(m)
             # Ignorujemy BROADCASTA TO SAMYCH SIEBIE
             if payload.ip_address == address:

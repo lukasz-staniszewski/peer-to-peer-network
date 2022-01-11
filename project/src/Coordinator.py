@@ -66,7 +66,6 @@ class Coordinator:
     def print_info(self):
         print(f"UDP_PORT: {self.udp_port}, TCP_PORT: {self.tcp_port}, LOCAL_ADDRESS: {self.address}")
 
-
     def download_file(self, filename):
         addresses = self.remote_state.get_addresses_by_filename(filename)
         print(filename)
@@ -82,5 +81,10 @@ class Coordinator:
             self.add_local_file(File(payload.file_name, payload.data))
         else:
             print('FILE DOESNT EXIST! CANNOT DOWNLOAD THAT FILE')
+
+    def send_nors(self):
+        command, payload = self.struct_preparation.prepare_nors(self.address, self.tcp_port)
+        data = self.serialize(command, payload)
+        self.udp_module.send_broadcast(data)
 
 
