@@ -28,10 +28,10 @@ class Coordinator:
         return data_serializer.serialize_msg(command, payload)
 
     def add_local_file(self, filename):
-        self.local_state.add_local_file(filename)
-        command, payload = self.struct_preparation.prepare_nwrs(self.address, self.tcp_port, filename)
-        data = self.serialize(command, payload)
-        self.udp_module.send_broadcast(data)
+        if self.local_state.add_local_file(filename):
+            command, payload = self.struct_preparation.prepare_nwrs(self.address, self.tcp_port, filename)
+            data = self.serialize(command, payload)
+            self.udp_module.send_broadcast(data)
 
     def remove_local_file(self, filename):
         self.local_state.remove_local_file(filename)

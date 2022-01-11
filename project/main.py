@@ -1,3 +1,4 @@
+import sys
 import threading
 import time
 from src.TCPModule import TCPModule
@@ -25,12 +26,12 @@ def print_interface():
     5. DOWNLOAD FILE
     6. NODE INFO
     7. SHUTDOWN NODE & SEND BROADCAST
+    8. GET OTHERS FILES
     """
     print(s)
 
 
 if __name__ == '__main__':
-    # address: ...   port: ...   files: ... (files na poczatku jest puste)
     udp_module = UDPModule()
     tcp_module = TCPModule()
 
@@ -42,19 +43,17 @@ if __name__ == '__main__':
     t_tcp = threading.Thread(target=tcp_module.start_listen, args=[coordinator])
     t_tcp.start()
 
-    # coordinator.add_local_file(File('helloworlds.txt', "balbinka"))
-
     coordinator.get_others_files()
 
     data_gen = DataGenerator()
     while True:
         print_interface()
         usr_input = int(input('OPERATION: '))
-        # 1. ADD FILE
+        # 1. ADD FILE [NWRS TEST]
         if usr_input == 1:
             file_name = str(input("FILENAME: "))
             coordinator.add_local_file(File(file_name, data_gen.generate_data(10)))
-        # 2. REMOVE FILE
+        # 2. REMOVE FILE [RMRS TEST]
         elif usr_input == 2:
             file_name_remove = str(input("FILENAME TO REMOVE: "))
             coordinator.remove_local_file(file_name_remove)
@@ -64,13 +63,17 @@ if __name__ == '__main__':
         # 4. SEE OTHERS FILES
         elif usr_input == 4:
             print(coordinator.remote_state.others_files)
-        # 5. DOWNLOAD FILE
+        # 5. DOWNLOAD FILE [GETF TEST]
         elif usr_input == 5:
             file_name_download = str(input("FILENAME TO DOWNLOAD: "))
             coordinator.download_file(file_name_download)
         # 6. NODE INFO
         elif usr_input == 6:
             coordinator.print_info()
-        # 7. SHUTDOWN NODE & SEND BROADCAST --> NORS TEST
+        # 7. SHUTDOWN NODE & SEND BROADCAST [NORS TEST]
         elif usr_input == 7:
             coordinator.send_nors()
+            #sys.exit(0)
+        # 8. GET OTHERS FILES
+        elif usr_input == 8:
+            coordinator.get_others_files()
