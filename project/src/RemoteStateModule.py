@@ -18,9 +18,9 @@ class RemoteStateModule:
                     self.others_files.pop(key)
                     return True
             else:
-                curr_files = self.others_files[filename]
+                curr_files = self.others_files[key]
                 curr_files.remove((address, port))
-                self.others_files[filename] = curr_files
+                self.others_files[key] = curr_files
                 return True
         return False
 
