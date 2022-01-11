@@ -41,8 +41,11 @@ class TCPModule:
     def receive_data(self, socket_connection):
         data = b''
         while True:
+            print(1)
             try:
+                print(2)
                 msg_data = socket_connection.recv(self.BUFFER_SIZE)
+                print(3)
             except Exception as e:
                 socket_connection.close()
                 return e
@@ -75,7 +78,7 @@ class TCPModule:
         if command == 'GETF':
             print('GETF command received')
 
-            result = coordinator.send_file(payload)
+            result = coordinator.send_file(socket_connection, payload)
 
             if result != 0:
                 print("SERVER ERROR | Cant send back data! " + str(result))
@@ -111,9 +114,8 @@ class TCPModule:
             print("SERVER ERROR | Cant read data! " + str(data))
             return
 
-        print("Received data: " + data.decode())
-
         send_socket.close()
+        return data
 
     def send_ndst(self, send_socket, data):
         result = self.send_data(send_socket, data)

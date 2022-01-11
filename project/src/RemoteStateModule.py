@@ -12,10 +12,11 @@ class RemoteStateModule:
             self.others_files[filename] = [(address, port)]
 
     def remove_from_others_files(self, filename, address, port):
-        if filename in self.others_files.keys():
-            if len(self.others_files[filename]) == 1:
-                self.others_files.pop(filename)
-                return True
+        for key, value in self.others_files.items():
+            if key.name == filename:
+                if len(self.others_files[key]) == 1:
+                    self.others_files.pop(key)
+                    return True
             else:
                 curr_files = self.others_files[filename]
                 curr_files.remove((address, port))
@@ -39,6 +40,7 @@ class RemoteStateModule:
             self.others_files.pop(key)
 
     def get_addresses_by_filename(self, filename):
-        result = self.others_files[filename]
-        return self.others_files[filename]
+        for key, value in self.others_files.items():
+            if key.name == filename:
+                return value
 
