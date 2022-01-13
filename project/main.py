@@ -9,7 +9,8 @@ from File import File
 import socket
 
 hostname = socket.gethostname()
-local_ip = socket.gethostbyname(hostname)
+# local_ip = socket.gethostbyname(hostname + ".local")
+local_ip = socket.gethostbyname("192.168.204.130")
 
 address = local_ip
 UDP_PORT = 8888
@@ -34,7 +35,6 @@ def print_interface():
 if __name__ == '__main__':
     udp_module = UDPModule()
     tcp_module = TCPModule()
-
     coordinator = Coordinator(address, UDP_PORT, udp_module, TCP_PORT, tcp_module)
 
     t_udp = threading.Thread(target=udp_module.start_listen, args=[coordinator])
@@ -48,7 +48,12 @@ if __name__ == '__main__':
     data_gen = DataGenerator()
     while True:
         print_interface()
-        usr_input = int(input('OPERATION: '))
+        try:
+            usr_input = int(input('OPERATION: '))
+        except ValueError:
+            print("WRONG COMMAND!")
+            continue
+        # usr_input = int(input('OPERATION: '))
         # 1. ADD FILE [NWRS TEST]
         if usr_input == 1:
             file_name = str(input("FILENAME: "))

@@ -85,6 +85,7 @@ class TCPModule:
                 return
         elif command == 'NDST':
             print('NDST command received')
+            coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
             coordinator.add_other_files(payload)
             print(coordinator.remote_state.others_files)
             print(f'State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')

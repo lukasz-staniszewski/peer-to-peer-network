@@ -3,8 +3,9 @@ import socket
 
 
 hostname = socket.gethostname()
-local_ip = socket.gethostbyname(hostname)
+local_ip = socket.gethostbyname("192.168.204.130")
 address = local_ip
+# address = "192.168.204.130"
 UDP_PORT = 8888
 BUFFER_SIZE = 1024
 UDP_PERMITTED_MESS = ['GETS', 'NWRS', 'RMRS', 'NORS']
@@ -52,25 +53,25 @@ class UDPModule:
 
             # Jakis wezel udostepnia nowy plik
             if command == 'NWRS':
+                add = payload.ip_address
+                port = payload.port
+                filename = payload.file_name
                 with lock:
-                    add = payload.ip_address
-                    port = payload.port
-                    filename = payload.file_name
                     coordinator.remote_state.add_to_others_files(filename, add, port)
                 print(f'UPLOADED other_files: {filename}')
             # Usun przypisany wezel do jakiegos pliku
             if command == 'RMRS':
+                add = payload.ip_address
+                port = payload.port
+                filename = payload.file_name
                 with lock:
-                    add = payload.ip_address
-                    port = payload.port
-                    filename = payload.file_name
                     coordinator.remote_state.remove_from_others_files(filename, add, port)
                 print(f'Deleted from other_files: {filename}')
             # Dany wezel nie udostepnia juz zadnych plikow
             if command == 'NORS':
+                add = payload.ip_address
+                port = payload.port
                 with lock:
-                    add = payload.ip_address
-                    port = payload.port
                     coordinator.remote_state.remove_node_from_others_files(add, port)
             if command not in UDP_PERMITTED_MESS:
                 print(f'Unknown command: {command}')
