@@ -11,7 +11,7 @@ import socket
 
 hostname = socket.gethostname()
 # local_ip = socket.gethostbyname(hostname + ".local")
-local_ip = socket.gethostbyname("192.168.204.130")
+local_ip = socket.gethostbyname("192.168.204.128")
 
 address = local_ip
 UDP_PORT = 8888

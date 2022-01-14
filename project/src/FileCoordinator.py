@@ -1,4 +1,4 @@
-import sys
+import os
 
 
 class FileCoordinator:
@@ -11,7 +11,7 @@ class FileCoordinator:
         return self.files_folder_path + file_name
 
     def get_data_from_file(self, file_path):
-        if sys.path.isfile(file_path):
+        if os.path.isfile(file_path):
             with open(file_path, "rb") as file:
                 data = file.read()
             return data
