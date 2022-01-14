@@ -12,6 +12,9 @@ class LocalStateModule:
         self.my_files.append(file)
         return True
 
+    def remove_all_files(self):
+        self.my_files.clear()
+
     def remove_local_file(self, filename):
         if filename not in self.get_myfiles_names():
             return False

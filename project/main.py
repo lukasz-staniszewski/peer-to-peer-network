@@ -1,3 +1,4 @@
+import os.path
 import sys
 import threading
 import time
@@ -57,7 +58,11 @@ if __name__ == '__main__':
         # 1. ADD FILE [NWRS TEST]
         if usr_input == 1:
             file_name = str(input("FILENAME: "))
-            coordinator.add_local_file(File(file_name, data_gen.generate_data(10)))
+            file_path = str(input("FILEPATH: "))
+            if os.path.isfile(file_path):
+                coordinator.add_local_file(File(filename=file_name, path=file_path))
+            else:
+                print("File with such path doesnt exists!")
         # 2. REMOVE FILE [RMRS TEST]
         elif usr_input == 2:
             file_name_remove = str(input("FILENAME TO REMOVE: "))
@@ -78,6 +83,7 @@ if __name__ == '__main__':
         # 7. SHUTDOWN NODE & SEND BROADCAST [NORS TEST]
         elif usr_input == 7:
             coordinator.send_nors()
+            coordinator.local_state.remove_all_files()
             #sys.exit(0)
         # 8. GET OTHERS FILES
         elif usr_input == 8:
