@@ -13,6 +13,6 @@ port = 2115
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((address, port))
 mess = 'NDST'.encode()
-struc = TCP_STR_CONT(address, port, None, ['elo.txt', 'siema.asm', 'balbinka.jpg'])
+struc = TCP_STR_CONT(address, port, None, ['elo.txt', 'siema.asm'])
 struc_pickled = mess + pickle.dumps(struc) + '\4'.encode()
 s.sendall(struc_pickled)

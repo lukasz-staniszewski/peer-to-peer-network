@@ -41,16 +41,16 @@ class TCPModule:
 
     def receive_data(self, socket_connection):
         data = b''
+        i = 1
         while True:
             try:
                 msg_data = socket_connection.recv(self.BUFFER_SIZE)
             except Exception as e:
                 socket_connection.close()
                 return e
-            if not msg_data or msg_data[-1] == 4:
-                data = data + msg_data
+            if not msg_data:
                 break
-
+            i+=1
             data += msg_data
         return data
 
