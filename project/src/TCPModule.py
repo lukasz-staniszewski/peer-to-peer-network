@@ -45,6 +45,7 @@ class TCPModule:
             try:
                 msg_data = socket_connection.recv(self.BUFFER_SIZE)
             except Exception as e:
+                print("INFO | SERVER TCP | Error while receiving data!")
                 socket_connection.close()
                 return e
             if not msg_data:
@@ -67,7 +68,19 @@ class TCPModule:
             print("ERROR | SERVER TCP | Cant read data! " + str(data))
             return
 
-        command, payload = data_decoder.deserialize(data)
+        try:
+            command, payload = data_decoder.deserialize_tcp(data)
+        except Exception as e:
+            print(f"ERROR | SERVER TCP | {e} - wrong hash, download abandoned!")
+            socket_connection.close()
+            print(
+                "INFO | SERVER TCP | Disconnection of "
+                + str(client_address[0])
+                + ":"
+                + str(client_address[1])
+            )
+            return
+
 
         if command == 'GETF':
             print('INFO | SERVER TCP | GETF command received')

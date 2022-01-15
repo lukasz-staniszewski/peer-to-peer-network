@@ -22,19 +22,23 @@ class Coordinator:
         self.udp_module = udp_module
         self.struct_preparation = StructPreparation()
 
-    def deserialize(self, data):
+    def deserialize_udp(self, data):
         data_deserializer = DataDeserializer()
-        return data_deserializer.deserialize(data)
+        return data_deserializer.deserialize_udp(data)
 
-    def serialize(self, command, payload):
+    def serialize_udp(self, command, payload):
         data_serializer = DataSerializer()
-        return data_serializer.serialize_msg(command, payload)
+        return data_serializer.serialize_udp(command, payload)
+
+    def serialize_tcp(self, command, payload):
+        data_serializer = DataSerializer()
+        return data_serializer.serialize_tcp(command, payload)
 
     def add_local_file(self, filename):
         if self.local_state.add_local_file(filename):
             print(f"INFO | COORDINATOR BROADCAST | Sending NWRS of {filename}!")
             command, payload = self.struct_preparation.prepare_nwrs(self.address, self.tcp_port, filename)
-            data = self.serialize(command, payload)
+            data = self.serialize_udp(command, payload)
             self.udp_module.send_broadcast(data)
         else:
             print(f"ERROR | COORDINATOR | In local files there is already file {filename}!")
@@ -43,7 +47,7 @@ class Coordinator:
         if self.local_state.remove_local_file(filename):
             print(f"INFO | COORDINATOR BROADCAST | Sending RMRS of {filename}!")
             command, payload = self.struct_preparation.prepare_rmrs(self.address, self.tcp_port, filename)
-            data = self.serialize(command, payload)
+            data = self.serialize_udp(command, payload)
             self.udp_module.send_broadcast(data)
         else:
             print(f"ERROR | COORDINATOR | In local files there is no {filename}!")
@@ -55,7 +59,7 @@ class Coordinator:
     def get_others_files(self):
         print(f"INFO | COORDINATOR BROADCAST | Sending GETS!")
         command, payload = self.struct_preparation.prepare_gets(self.address, self.tcp_port)
-        data = self.serialize(command, payload)
+        data = self.serialize_udp(command, payload)
         self.udp_module.send_broadcast(data)
 
     def perform_send(self, address, port, data):
@@ -73,7 +77,7 @@ class Coordinator:
         print(f"INFO | COORDINATOR | STARTING SENDING NDST TO {addr}:{port}")
         ndst_data = self.local_state.get_local_files()
         command, payload = self.struct_preparation.prepare_ndst(self.address, self.tcp_port, ndst_data)
-        data = self.serialize(command, payload)
+        data = self.serialize_tcp(command, payload)
         self.perform_send(address=addr, port=port, data=data)
 
     def send_file(self, payload):
@@ -84,7 +88,7 @@ class Coordinator:
         file_coordinator = FileCoordinator()
         data = file_coordinator.get_data_from_file(file_path=file.path)
         command, payload = self.struct_preparation.prepare_file(self.address, self.tcp_port, file.name, data)
-        data = self.serialize(command, payload)
+        data = self.serialize_tcp(command, payload)
         self.perform_send(address=addr, port=port, data=data)
 
     def send_decf(self, payload):
@@ -92,7 +96,7 @@ class Coordinator:
         addr = payload.ip_address
         port = payload.port
         command, payload = self.struct_preparation.prepare_decf(self.address, self.tcp_port, payload.file_name)
-        data = self.serialize(command, payload)
+        data = self.serialize_tcp(command, payload)
         self.perform_send(address=addr, port=port, data=data)
 
 
@@ -106,7 +110,7 @@ class Coordinator:
             send_params = random.choice(addresses)
             send_address, send_port = send_params[0], send_params[1]
             command, payload = self.struct_preparation.prepare_getf(self.address, self.tcp_port, filename)
-            data = self.serialize(command, payload)
+            data = self.serialize_tcp(command, payload)
             self.perform_send(address=send_address, port=send_port, data=data)
         else:
             print('ERROR | DOWNLOADING | File doesnt exists! Cannot download such file!')
@@ -120,7 +124,7 @@ class Coordinator:
     def send_nors(self):
         print(f'INFO | COORDINATOR | Sending NORS!')
         command, payload = self.struct_preparation.prepare_nors(self.address, self.tcp_port)
-        data = self.serialize(command, payload)
+        data = self.serialize_udp(command, payload)
         self.udp_module.send_broadcast(data)
 
     def remove_node_from_file(self, payload):

@@ -3,7 +3,7 @@ import socket
 
 
 hostname = socket.gethostname()
-local_ip = socket.gethostbyname("192.168.204.128")
+local_ip = socket.gethostbyname("192.168.204.130")
 address = local_ip
 UDP_PORT = 8888
 BUFFER_SIZE = 1024
@@ -35,7 +35,7 @@ class UDPModule:
         print('INFO | SERVER UDP | UDP Listener is running')
         while True:
             m = self.udp_socket.recv(1024)
-            command, payload = coordinator.deserialize(m)
+            command, payload = coordinator.deserialize_udp(m)
             # ignoring own broadcast
             if payload.ip_address == address:
                 command = 'SKIP'
