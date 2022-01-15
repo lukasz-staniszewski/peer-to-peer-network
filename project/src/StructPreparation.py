@@ -26,3 +26,6 @@ class StructPreparation:
 
     def prepare_nors(self, addr, port):
         return 'NORS', UDP_STR_INFO(addr, port)
+
+    def prepare_decf(self, addr, port, filename):
+        return 'DECF', TCP_STR_INFO(addr, port, filename)
