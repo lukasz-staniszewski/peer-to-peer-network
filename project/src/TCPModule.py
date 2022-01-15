@@ -32,6 +32,7 @@ class TCPModule:
     def send_data(self, socket_connection, data):
         try:
             socket_connection.sendall(data)
+            print("INFO | SERVER TCP | DATA SENT!")
         except Exception as e:
             socket_connection.close()
             return e

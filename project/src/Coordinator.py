@@ -77,19 +77,23 @@ class Coordinator:
         self.perform_send(address=addr, port=port, data=data)
 
     def send_file(self, payload):
-        print(f"INFO | COORDINATOR | STARTING SENDING {payload.file_name} TO {payload.address}:{payload.port}")
+        print(f"INFO | COORDINATOR | STARTING SENDING {payload.file_name} TO {payload.ip_address}:{payload.port}")
+        addr = payload.ip_address
+        port = payload.port
         file = self.local_state.get_local_file(payload.file_name)
         file_coordinator = FileCoordinator()
         data = file_coordinator.get_data_from_file(file_path=file.path)
         command, payload = self.struct_preparation.prepare_file(self.address, self.tcp_port, file.name, data)
         data = self.serialize(command, payload)
-        self.perform_send(address=payload.ip_address, port=payload.port,data=data)
+        self.perform_send(address=addr, port=port, data=data)
 
     def send_decf(self, payload):
-        print(f"INFO | COORDINATOR | STARTING SENDING DECF OF {payload.file_name} TO {payload.address}:{payload.port}")
+        print(f"INFO | COORDINATOR | STARTING SENDING DECF OF {payload.file_name} TO {payload.ip_address}:{payload.port}")
+        addr = payload.ip_address
+        port = payload.port
         command, payload = self.struct_preparation.prepare_decf(self.address, self.tcp_port, payload.file_name)
         data = self.serialize(command, payload)
-        self.perform_send(address=payload.ip_address, port=payload.port, data=data)
+        self.perform_send(address=addr, port=port, data=data)
 
 
     def print_info(self):
@@ -121,7 +125,7 @@ class Coordinator:
 
     def remove_node_from_file(self, payload):
         print(f'INFO | COORDINATOR | REMOTE STATE | '
-              f'Removing ({payload.address}:{payload.port}) from {payload.file_name} owners!')
-        self.remote_state.remove_from_others_files(filename=payload.file_name, address=payload.address,
+              f'Removing ({payload.ip_address}:{payload.port}) from {payload.file_name} owners!')
+        self.remote_state.remove_from_others_files(filename=payload.file_name, address=payload.ip_address,
                                                    port=payload.port)
 
