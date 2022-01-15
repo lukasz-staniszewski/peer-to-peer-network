@@ -1,6 +1,5 @@
 import socket
 import threading
-from project.src.DataGenerator import DataGenerator
 from project.src.DataDeserializer import DataDeserializer
 
 LISTEN_PORT = 2115
@@ -36,6 +35,7 @@ class TCPModule:
         except Exception as e:
             socket_connection.close()
             return e
+        socket_connection.close()
         return 0
 
     def receive_data(self, socket_connection):
@@ -70,57 +70,40 @@ class TCPModule:
 
         command, payload = data_decoder.deserialize(data)
 
-        print("INFO | SERVER TCP | Received command: " + command)
-
         if command == 'GETF':
             print('INFO | SERVER TCP | GETF command received')
+            if coordinator.local_state.get_local_file(payload.file_name) is None:
+                print(f'WARNING | COORDINATOR | LOCAL STATE | FILE {payload.file_name} NOT FOUND, SENDING DECF!')
+                coordinator.send_decf(payload)
+            else:
+                print(f'INFO | COORDINATOR | LOCAL STATE | FILE {payload.file_name} FOUND, SENDING FILE!')
+                coordinator.send_file(payload)
 
-            result = coordinator.send_file(socket_connection, payload)
+        elif command == "FILE":
+            print('INFO | SERVER TCP | FILE command received')
+            coordinator.save_file(payload=payload)
 
-            if result != 0:
-                print("ERROR | SERVER TCP | Cant send back data! " + str(result))
-                return
+        elif command == "DECF":
+            print('INFO | SERVER TCP | DECF command received')
+            coordinator.remove_node_from_file(payload=payload)
+            print(f'ERROR | CAN\'T DOWNLOAD FILE {payload.file_name}!')
+
         elif command == 'NDST':
             print('INFO | SERVER TCP | NDST command received')
             coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
             coordinator.add_other_files(payload)
-            print(coordinator.remote_state.others_files)
             print(f'INFO | SERVER TCP | State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')
-            socket_connection.close()
+
         else:
             print(f'ERROR | SERVER TCP | UNKNOWN COMMAND: {command}')
-            socket_connection.close()
 
+        socket_connection.close()
         print(
             "INFO | SERVER TCP | Disconnection of "
             + str(client_address[0])
             + ":"
             + str(client_address[1])
         )
-
-    def send_getf(self, send_socket, data):
-
-        result = self.send_data(send_socket, data)
-        print(f"INFO | SERVER TCP | GETF SEND_SOCKET: {send_socket}")
-        if result != 0:
-            print("ERROR | SERVER TCP | Cant send data! " + str(result))
-            return
-
-        data = self.receive_data(send_socket)
-
-        if isinstance(data, Exception):
-            print("ERROR | SERVER TCP | Cant read data! " + str(data))
-            return
-
-        send_socket.close()
-        return data
-
-    def send_ndst(self, send_socket, data):
-        result = self.send_data(send_socket, data)
-
-        if result != 0:
-            print("ERROR | SERVER TCP | Cant send data! " + str(result))
-            return
 
     def start_listen(self, coordinator):
         self.listen_socket = self.prepare_socket_listen()

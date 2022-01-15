@@ -5,7 +5,6 @@ import socket
 hostname = socket.gethostname()
 local_ip = socket.gethostbyname("192.168.204.128")
 address = local_ip
-# address = "192.168.204.130"
 UDP_PORT = 8888
 BUFFER_SIZE = 1024
 UDP_PERMITTED_MESS = ['GETS', 'NWRS', 'RMRS', 'NORS', 'SKIP']
@@ -29,7 +28,7 @@ class UDPModule:
         server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         server.sendto(mess, ('<broadcast>', self.UDP_PORT))
-        print("INFO | SERVER UDP | BROADCAST sent!")
+        print("INFO | SERVER UDP | Broadcast sent!")
 
     def udp_listener(self, coordinator):
         lock = threading.Lock()
@@ -41,8 +40,10 @@ class UDPModule:
             if payload.ip_address == address:
                 command = 'SKIP'
                 print('INFO | SERVER UDP | Ignoring own broadcast!')
+
             # send your list to node
             elif command == 'GETS':
+                print('INFO | SERVER UDP | GOT GETS BROADCAST!')
                 add = payload.ip_address
                 port = payload.port
                 # sending my_files on specific address
@@ -50,28 +51,34 @@ class UDPModule:
                     coordinator.send_ndst(add, port)
                 except Exception as e:
                     print('ERROR | SERVER UDP | Failed to send data')
+
             # node share new file
             elif command == 'NWRS':
+                print('INFO | SERVER UDP | GOT NWRS BROADCAST!')
                 add = payload.ip_address
                 port = payload.port
                 filename = payload.file_name
                 with lock:
                     coordinator.remote_state.add_to_others_files(filename, add, port)
-                print(f'INFO | SERVER UDP | UPLOADED other_files: {filename}')
-            # remove assigned node to specific file
+                print(f'INFO | SERVER UDP | GOT NWRS BROADCAST | Uploaded: {filename}')
+
+            #remove assigned node to specific file
             elif command == 'RMRS':
                 add = payload.ip_address
                 port = payload.port
                 filename = payload.file_name
                 with lock:
                     coordinator.remote_state.remove_from_others_files(filename, add, port)
-                print(f'INFO | SERVER UDP | Deleted from other_files: {filename}')
+                print(f'INFO | SERVER UDP | GOT RMRS BROADCAST | Deleted: {filename}')
+
             # node is now not sharing any files
             elif command == 'NORS':
+                print(f'INFO | SERVER UDP | GOT NORS BROADCAST')
                 add = payload.ip_address
                 port = payload.port
                 with lock:
                     coordinator.remote_state.remove_node_from_others_files(add, port)
+
             if command not in UDP_PERMITTED_MESS:
                 print(f'ERROR | SERVER UDP | Unknown command: {command}')
 
