@@ -18,7 +18,7 @@ class TCPModule:
         listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         listen_socket.bind((self.LISTEN_ADDRESS, self.LISTEN_PORT))
         listen_socket.listen(5)
-        print("Server listening at port " + str(self.LISTEN_PORT))
+        print("INFO | SERVER TCP | Server listening at port " + str(self.LISTEN_PORT))
         return listen_socket
 
     def prepare_socket_send(self, address, port):
@@ -26,7 +26,7 @@ class TCPModule:
         try:
             send_socket.connect((address, port))
         except Exception as e:
-            print(f'Can\'t establish a connection with {address, port}')
+            print(f'ERROR | SERVER TCP | Can\'t establish a connection with {address, port}')
 
         return send_socket
 
@@ -41,11 +41,8 @@ class TCPModule:
     def receive_data(self, socket_connection):
         data = b''
         while True:
-            print(1)
             try:
-                print(2)
                 msg_data = socket_connection.recv(self.BUFFER_SIZE)
-                print(3)
             except Exception as e:
                 socket_connection.close()
                 return e
@@ -59,7 +56,7 @@ class TCPModule:
     def listen_service(self, socket_connection, client_address, coordinator):
         data_decoder = DataDeserializer()
         print(
-            "SERVER INFO | Connection from "
+            "INFO | SERVER TCP | Connection from "
             + str(client_address[0])
             + ":"
             + str(client_address[1])
@@ -68,34 +65,34 @@ class TCPModule:
         data = self.receive_data(socket_connection)
 
         if isinstance(data, Exception):
-            print("SERVER ERROR | Cant read data! " + str(data))
+            print("ERROR | SERVER TCP | Cant read data! " + str(data))
             return
 
         command, payload = data_decoder.deserialize(data)
 
-        print("SERVER INFO | Received command: " + command)
+        print("INFO | SERVER TCP | Received command: " + command)
 
         if command == 'GETF':
-            print('GETF command received')
+            print('INFO | SERVER TCP | GETF command received')
 
             result = coordinator.send_file(socket_connection, payload)
 
             if result != 0:
-                print("SERVER ERROR | Cant send back data! " + str(result))
+                print("ERROR | SERVER TCP | Cant send back data! " + str(result))
                 return
         elif command == 'NDST':
-            print('NDST command received')
+            print('INFO | SERVER TCP | NDST command received')
             coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
             coordinator.add_other_files(payload)
             print(coordinator.remote_state.others_files)
-            print(f'State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')
+            print(f'INFO | SERVER TCP | State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')
             socket_connection.close()
         else:
-            print(f'UNKNOWN COMMAND: {command}')
+            print(f'ERROR | SERVER TCP | UNKNOWN COMMAND: {command}')
             socket_connection.close()
 
         print(
-            "SERVER INFO | Disconnection of "
+            "INFO | SERVER TCP | Disconnection of "
             + str(client_address[0])
             + ":"
             + str(client_address[1])
@@ -104,15 +101,15 @@ class TCPModule:
     def send_getf(self, send_socket, data):
 
         result = self.send_data(send_socket, data)
-
+        print(f"INFO | SERVER TCP | GETF SEND_SOCKET: {send_socket}")
         if result != 0:
-            print("ERROR | Cant send data! " + str(result))
+            print("ERROR | SERVER TCP | Cant send data! " + str(result))
             return
 
         data = self.receive_data(send_socket)
 
         if isinstance(data, Exception):
-            print("SERVER ERROR | Cant read data! " + str(data))
+            print("ERROR | SERVER TCP | Cant read data! " + str(data))
             return
 
         send_socket.close()
@@ -122,7 +119,7 @@ class TCPModule:
         result = self.send_data(send_socket, data)
 
         if result != 0:
-            print("ERROR | Cant send data! " + str(result))
+            print("ERROR | SERVER TCP | Cant send data! " + str(result))
             return
 
     def start_listen(self, coordinator):

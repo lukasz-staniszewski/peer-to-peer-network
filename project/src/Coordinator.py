@@ -60,17 +60,13 @@ class Coordinator:
         print(payload.file_name)
         file = self.local_state.get_local_file(payload.file_name)
         file_coordinator = FileCoordinator()
-        print("FILE!!!!")
-        print(file)
-        print("~~~~~~~~~~~~")
         data = file_coordinator.get_data_from_file(file_path=file.path)
         command, payload = self.struct_preparation.prepare_file(self.address, self.tcp_port, file.name, data)
         data = self.serialize(command, payload)
-        print(file.name)
         return self.tcp_module.send_data(send_socket, data)
 
     def print_info(self):
-        print(f"UDP_PORT: {self.udp_port}, TCP_PORT: {self.tcp_port}, LOCAL_ADDRESS: {self.address}")
+        print(f"INFO | UDP_PORT: {self.udp_port}, TCP_PORT: {self.tcp_port}, LOCAL_ADDRESS: {self.address}")
 
     def download_file(self, filename):
         addresses = self.remote_state.get_addresses_by_filename(filename)

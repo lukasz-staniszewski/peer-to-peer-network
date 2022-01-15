@@ -28,13 +28,13 @@ class RemoteStateModule:
         keys_to_delete = []
         for key, val in self.others_files.items():
             print(val)
-            print(f'want to remove {(address, port)}')
+            print(f'INFO | REMOTE STATE | Want to remove: {(address, port)}')
             if (address, port) in val:
                 if len(val) == 1:
                     keys_to_delete.append(key)
                 else:
                     val.remove((address, port))
-                print(f'removing {(address, port)}')
+                print(f'INFO | REMOTE STATE | removing {(address, port)}')
 
         for key in keys_to_delete:
             self.others_files.pop(key)
