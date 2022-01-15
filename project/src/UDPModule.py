@@ -3,7 +3,7 @@ import socket
 
 
 hostname = socket.gethostname()
-local_ip = socket.gethostbyname("192.168.204.130")
+local_ip = socket.gethostbyname("192.168.204.128")
 address = local_ip
 UDP_PORT = 8888
 BUFFER_SIZE = 1024
@@ -50,7 +50,7 @@ class UDPModule:
                 try:
                     coordinator.send_ndst(add, port)
                 except Exception as e:
-                    print('ERROR | SERVER UDP | Failed to send data')
+                    print(f'ERROR | SERVER UDP | Failed to send data -> {e}')
 
             # node share new file
             elif command == 'NWRS':

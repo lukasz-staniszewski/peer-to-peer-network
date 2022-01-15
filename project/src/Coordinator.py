@@ -16,6 +16,7 @@ class Coordinator:
         self.udp_port = udp_port
         self.tcp_port = tcp_port
         self.address = addr
+        self.downloads_list = []
         self.local_state = LocalStateModule()
         self.remote_state = RemoteStateModule()
         self.tcp_module = tcp_module
@@ -103,13 +104,24 @@ class Coordinator:
     def print_info(self):
         print(f"UDP_PORT: {self.udp_port}, TCP_PORT: {self.tcp_port}, LOCAL_ADDRESS: {self.address}")
 
+    def check_is_file_downloading(self, filename):
+        return filename in self.downloads_list
+
+    def remove_from_downloading(self, file_name):
+        self.downloads_list.remove(file_name)
+
     def download_file(self, filename):
+        if self.check_is_file_downloading(filename=filename):
+            print(f"ERROR | DOWNLOADING | Already downloading {filename}...")
+            return
+
         addresses = self.remote_state.get_addresses_by_filename(filename)
         print(f"INFO | DOWNLOADING | Downloading {filename}... from {addresses}")
         if addresses is not None:
             send_params = random.choice(addresses)
             send_address, send_port = send_params[0], send_params[1]
             command, payload = self.struct_preparation.prepare_getf(self.address, self.tcp_port, filename)
+            self.downloads_list.append(filename)
             data = self.serialize_tcp(command, payload)
             self.perform_send(address=send_address, port=send_port, data=data)
         else:

@@ -1,5 +1,5 @@
 import pickle
-from Validator import Validator
+from .Validator import Validator
 
 class DataSerializer:
     def __init__(self):
@@ -8,9 +8,9 @@ class DataSerializer:
         self.validator = Validator()
 
     def serialize_tcp(self, command, payload):
-        data = pickle.dumps(payload)
+        data = pickle.dumps(payload) + self.EOD
         data_hash = self.validator.create_hash(data=data)
-        serialized_msg = command.encode() + data_hash + data + self.EOD
+        serialized_msg = command.encode() + data_hash + data
         return serialized_msg
 
     def serialize_udp(self, command, payload):

@@ -94,10 +94,12 @@ class TCPModule:
         elif command == "FILE":
             print('INFO | SERVER TCP | FILE command received')
             coordinator.save_file(payload=payload)
+            coordinator.remove_from_downloading(file_name = payload.file_name)
 
         elif command == "DECF":
             print('INFO | SERVER TCP | DECF command received')
             coordinator.remove_node_from_file(payload=payload)
+            self.downloads_list.remove(file_name = payload.file_name)
             print(f'ERROR | CAN\'T DOWNLOAD FILE {payload.file_name}!')
 
         elif command == 'NDST':
