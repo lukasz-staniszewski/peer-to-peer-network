@@ -3,7 +3,7 @@ import socket
 
 
 hostname = socket.gethostname()
-local_ip = socket.gethostbyname("192.168.204.128")
+local_ip = socket.gethostbyname("192.168.204.130")
 address = local_ip
 UDP_PORT = 8888
 BUFFER_SIZE = 1024

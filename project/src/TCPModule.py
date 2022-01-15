@@ -72,6 +72,7 @@ class TCPModule:
             command, payload = data_decoder.deserialize_tcp(data)
         except Exception as e:
             print(f"ERROR | SERVER TCP | {e} - wrong hash, download abandoned!")
+            coordinator.remove
             socket_connection.close()
             print(
                 "INFO | SERVER TCP | Disconnection of "
@@ -94,12 +95,10 @@ class TCPModule:
         elif command == "FILE":
             print('INFO | SERVER TCP | FILE command received')
             coordinator.save_file(payload=payload)
-            coordinator.remove_from_downloading(file_name = payload.file_name)
 
         elif command == "DECF":
             print('INFO | SERVER TCP | DECF command received')
             coordinator.remove_node_from_file(payload=payload)
-            self.downloads_list.remove(file_name = payload.file_name)
             print(f'ERROR | CAN\'T DOWNLOAD FILE {payload.file_name}!')
 
         elif command == 'NDST':
