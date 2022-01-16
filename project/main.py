@@ -1,11 +1,9 @@
 import os.path
-import sys
 import threading
 from src.TCPModule import TCPModule
 from src.UDPModule import UDPModule
 from src.Coordinator import Coordinator, local_state_lock, remote_state_lock
 from File import File
-import socket
 import logging
 import configparser
 
@@ -19,12 +17,6 @@ logging.basicConfig(
     format='%(asctime)s:%(levelname)s:%(message)s',
     datefmt="%Y-%m-%d %H:%M:%S"
 )
-
-
-# hostname = socket.gethostname()
-# local_ip = socket.gethostbyname(config['NET']['local_ip'])
-# UDP_PORT = config['UDP']['listen_port']
-# TCP_PORT = config['TCP']['listen_port']
 
 
 def print_interface():
@@ -60,6 +52,7 @@ def main():
     t_tcp = threading.Thread(target=tcp_module.start_listen, args=[coordinator])
     t_tcp.start()
 
+    coordinator.send_nors()
     coordinator.get_others_files()
 
     while True:
