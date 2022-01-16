@@ -1,5 +1,6 @@
 import socket
 import threading
+import logging
 
 from project.src.Coordinator import local_state_lock, remote_state_lock
 from project.src.DataDeserializer import DataDeserializer
@@ -20,6 +21,7 @@ class TCPModule:
         listen_socket.bind((self.LISTEN_ADDRESS, self.LISTEN_PORT))
         listen_socket.listen(5)
         print("INFO | SERVER TCP | Server listening at port " + str(self.LISTEN_PORT))
+        logging.info("SERVER TCP | Server listening at port " + str(self.LISTEN_PORT))
         return listen_socket
 
     def prepare_socket_send(self, address, port):
@@ -31,6 +33,7 @@ class TCPModule:
         try:
             socket_connection.sendall(data)
             print("INFO | SERVER TCP | DATA SENT!")
+            logging.info("SERVER TCP | DATA SENT!")
         except Exception as e:
             socket_connection.close()
             return e
@@ -44,6 +47,7 @@ class TCPModule:
                 msg_data = socket_connection.recv(self.BUFFER_SIZE)
             except Exception as e:
                 print("INFO | SERVER TCP | Error while receiving data!")
+                logging.warning("SERVER TCP | Error while receiving data!")
                 socket_connection.close()
                 return e
             if not msg_data:
@@ -53,70 +57,79 @@ class TCPModule:
 
     def listen_service(self, socket_connection, client_address, coordinator):
         data_decoder = DataDeserializer()
+        connection_from = str(client_address[0]) + ":" + str(client_address[1])
         print(
             "INFO | SERVER TCP | Connection from "
-            + str(client_address[0])
-            + ":"
-            + str(client_address[1])
+            + connection_from
         )
-
+        logging.info("SERVER TCP | Connection from " + connection_from)
         data = self.receive_data(socket_connection)
 
         if isinstance(data, Exception):
             print("ERROR | SERVER TCP | Cant read data! " + str(data))
+            logging.warning("SERVER TCP | Cant read data! " + str(data))
             return
 
         try:
             command, payload = data_decoder.deserialize_tcp(data)
         except Exception as e:
             print(f"ERROR | SERVER TCP | {e} - wrong hash, download abandoned!")
+            logging.warning(f"SERVER TCP | {e} - wrong hash, download abandoned!")
+
             coordinator.remove
             socket_connection.close()
+            connection_from = str(client_address[0]) + ":" + str(client_address[1])
             print(
                 "INFO | SERVER TCP | Disconnection of "
-                + str(client_address[0])
-                + ":"
-                + str(client_address[1])
+                + connection_from
             )
+            logging.info("INFO | SERVER TCP | Disconnection of " + connection_from)
             return
-
 
         if command == 'GETF':
             with local_state_lock:
                 print('INFO | SERVER TCP | GETF command received')
+                logging.info("SERVER TCP | GETF command received")
                 if coordinator.local_state.get_local_file(payload.file_name) is None:
                     print(f'WARNING | COORDINATOR | LOCAL STATE | FILE {payload.file_name} NOT FOUND, SENDING DECF!')
+                    logging.warning(f"COORDINATOR | LOCAL STATE | FILE {payload.file_name} NOT FOUND, SENDING DECF!")
                     coordinator.send_decf(payload)
                 else:
                     print(f'INFO | COORDINATOR | LOCAL STATE | FILE {payload.file_name} FOUND, SENDING FILE!')
+                    logging.info(f"COORDINATOR | LOCAL STATE | FILE {payload.file_name} FOUND, SENDING FILE!")
                     coordinator.send_file(payload)
 
         elif command == "FILE":
             print('INFO | SERVER TCP | FILE command received')
+            logging.info("SERVER TCP | FILE command received")
             coordinator.save_file(payload=payload)
 
         elif command == "DECF":
             print('INFO | SERVER TCP | DECF command received')
+            logging.info("SERVER TCP | DECF command received")
             coordinator.remove_node_from_file(payload=payload)
             print(f'ERROR | CAN\'T DOWNLOAD FILE {payload.file_name}!')
+            logging.warning(f"CAN\'T DOWNLOAD FILE {payload.file_name}!")
 
         elif command == 'NDST':
             print('INFO | SERVER TCP | NDST command received')
+            logging.info("SERVER TCP | NDST command received")
             with remote_state_lock:
                 coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
             coordinator.add_other_files(payload)
             print(f'INFO | SERVER TCP | State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')
-
+            logging.info(f"SERVER TCP | State of node with address {(payload.ip_address, payload.port)} is: {payload.data}")
         else:
             print(f'ERROR | SERVER TCP | UNKNOWN COMMAND: {command}')
+            logging.warning(f"SERVER TCP | UNKNOWN COMMAND: {command}")
 
         socket_connection.close()
+        connection_from = str(client_address[0]) + ":" + str(client_address[1])
         print(
             "INFO | SERVER TCP | Disconnection of "
-            + str(client_address[0])
-            + ":"
-            + str(client_address[1])
+            + connection_from
         )
+        logging.info("SERVER TCP | Disconnection of " + connection_from)
 
     def start_listen(self, coordinator):
         self.listen_socket = self.prepare_socket_listen()

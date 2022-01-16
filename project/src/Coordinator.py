@@ -1,4 +1,5 @@
 import threading
+import logging
 
 from .DataDeserializer import DataDeserializer
 from .DataSerializer import DataSerializer
@@ -39,21 +40,25 @@ class Coordinator:
         with local_state_lock:
             if self.local_state.add_local_file(filename):
                 print(f"INFO | COORDINATOR BROADCAST | Sending NWRS of {filename}!")
+                logging.info(f"COORDINATOR BROADCAST | Sending NWRS of {filename}!")
                 command, payload = self.struct_preparation.prepare_nwrs(self.address, self.tcp_port, filename)
                 data = self.serialize_udp(command, payload)
                 self.udp_module.send_broadcast(data)
             else:
                 print(f"ERROR | COORDINATOR | In local files there is already file {filename}!")
+                logging.warning(f"COORDINATOR | In local files there is already file {filename}!")
 
     def remove_local_file(self, filename):
         with local_state_lock:
             if self.local_state.remove_local_file(filename):
                 print(f"INFO | COORDINATOR BROADCAST | Sending RMRS of {filename}!")
+                logging.info(f"COORDINATOR BROADCAST | Sending RMRS of {filename}!")
                 command, payload = self.struct_preparation.prepare_rmrs(self.address, self.tcp_port, filename)
                 data = self.serialize_udp(command, payload)
                 self.udp_module.send_broadcast(data)
             else:
                 print(f"ERROR | COORDINATOR | In local files there is no {filename}!")
+                logging.warning(f"COORDINATOR | In local files there is no {filename}!")
 
     def add_other_files(self, payload):
         for filename in payload.data:
@@ -62,6 +67,7 @@ class Coordinator:
 
     def get_others_files(self):
         print(f"INFO | COORDINATOR BROADCAST | Sending GETS!")
+        logging.info(f"COORDINATOR BROADCAST | Sending GETS!")
         command, payload = self.struct_preparation.prepare_gets(self.address, self.tcp_port)
         data = self.serialize_udp(command, payload)
         self.udp_module.send_broadcast(data)
@@ -80,12 +86,14 @@ class Coordinator:
 
         except Exception:
             print(f'ERROR | SERVER TCP | Can\'t establish a connection with {address, port}')
+            logging.error(f"SERVER TCP | Can\'t establish a connection with {address, port}")
             with remote_state_lock:
                 self.remote_state.remove_node_from_others_files(address, port)
 
 
     def send_ndst(self, addr, port):
         print(f"INFO | COORDINATOR | STARTING SENDING NDST TO {addr}:{port}")
+        logging.info(f"COORDINATOR | STARTING SENDING NDST TO {addr}:{port}")
         with local_state_lock:
             ndst_data = self.local_state.get_local_files()
         command, payload = self.struct_preparation.prepare_ndst(self.address, self.tcp_port, ndst_data)
@@ -94,6 +102,7 @@ class Coordinator:
 
     def send_file(self, payload):
         print(f"INFO | COORDINATOR | STARTING SENDING {payload.file_name} TO {payload.ip_address}:{payload.port}")
+        logging.info(f"COORDINATOR | STARTING SENDING {payload.file_name} TO {payload.ip_address}:{payload.port}")
         addr = payload.ip_address
         port = payload.port
         with local_state_lock:
@@ -108,6 +117,7 @@ class Coordinator:
 
     def send_decf(self, payload):
         print(f"INFO | COORDINATOR | STARTING SENDING DECF OF {payload.file_name} TO {payload.ip_address}:{payload.port}")
+        logging.info(f"COORDINATOR | STARTING SENDING DECF OF {payload.file_name} TO {payload.ip_address}:{payload.port}")
         addr = payload.ip_address
         port = payload.port
         command, payload = self.struct_preparation.prepare_decf(self.address, self.tcp_port, payload.file_name)
@@ -116,11 +126,13 @@ class Coordinator:
 
     def print_info(self):
         print(f"UDP_PORT: {self.udp_port}, TCP_PORT: {self.tcp_port}, LOCAL_ADDRESS: {self.address}")
+        logging.info(f"UDP_PORT: {self.udp_port}, TCP_PORT: {self.tcp_port}, LOCAL_ADDRESS: {self.address}")
 
     def download_file(self, filename):
         with remote_state_lock:
             addresses = self.remote_state.get_addresses_by_filename(filename)
         print(f"INFO | DOWNLOADING | Downloading {filename}... from {addresses}")
+        logging.info(f"DOWNLOADING | Downloading {filename}... from {addresses}")
         if addresses is not None:
             send_params = random.choice(addresses)
             send_address, send_port = send_params[0], send_params[1]
@@ -129,16 +141,19 @@ class Coordinator:
             self.perform_send(address=send_address, port=send_port, data=data)
         else:
             print('ERROR | DOWNLOADING | File doesnt exists! Cannot download such file!')
+            logging.warning(f"DOWNLOADING | File {filename} doesnt exists! Cannot download such file!")
 
     def save_file(self, payload):
         file_coordinator = FileCoordinator()
         with remote_state_lock:
             if payload.file_name not in self.local_state.get_local_files():
                 print(f'INFO | COORDINATOR | Saving file {payload.file_name}...!')
+                logging.info(f"COORDINATOR | Saving file {payload.file_name}...!")
                 new_file_path = file_coordinator.save_to_file(file_name=payload.file_name, file_data=payload.data)
                 self.add_local_file(File(payload.file_name, new_file_path))
             else:
                 print(f'ERROR | COORDINATOR | Cant save file {payload.file_name} - already got it!')
+                logging.warning(f"COORDINATOR | Cant save file {payload.file_name} - already got it!")
 
 
     def send_nors(self):
@@ -149,6 +164,8 @@ class Coordinator:
 
     def remove_node_from_file(self, payload):
         print(f'INFO | COORDINATOR | REMOTE STATE | '
+              f'Removing ({payload.ip_address}:{payload.port}) from {payload.file_name} owners!')
+        logging.info(f'COORDINATOR | REMOTE STATE | '
               f'Removing ({payload.ip_address}:{payload.port}) from {payload.file_name} owners!')
         with remote_state_lock:
             self.remote_state.remove_from_others_files(filename=payload.file_name, address=payload.ip_address,

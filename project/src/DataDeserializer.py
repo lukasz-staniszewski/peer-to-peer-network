@@ -1,4 +1,6 @@
 import pickle
+import logging
+
 from .Validator import Validator
 
 
@@ -16,9 +18,11 @@ class DataDeserializer:
             try:
                 payload = pickle.loads(payload)
             except pickle.UnpicklingError:
+                logging.error("Deserialization pickle error")
                 raise Exception("Deserialization pickle error")
             return command, payload
         else:
+            logging.error("Deserialization found hash not correct")
             raise Exception("Deserialization found hash not correct")
 
     def deserialize_udp(self, data):
