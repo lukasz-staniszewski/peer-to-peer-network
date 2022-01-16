@@ -22,12 +22,7 @@ class TCPModule:
 
     def prepare_socket_send(self, address, port):
         send_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            send_socket.connect((address, port))
-        except Exception as e:
-            print(f'ERROR | SERVER TCP | Can\'t establish a connection with {address, port}')
-            raise e
-
+        send_socket.connect((address, port))
         return send_socket
 
     def send_data(self, socket_connection, data):
