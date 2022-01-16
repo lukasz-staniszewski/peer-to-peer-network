@@ -115,7 +115,7 @@ class TCPModule:
             logging.info("SERVER TCP | NDST command received")
             with remote_state_lock:
                 coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
-            coordinator.add_other_files(payload)
+                coordinator.add_other_files(payload)
             print(f'INFO | Got state of node with address {(payload.ip_address, payload.port)}: {payload.data}')
             logging.info(f"SERVER TCP | State of node with address {(payload.ip_address, payload.port)} is: {payload.data}")
         else:

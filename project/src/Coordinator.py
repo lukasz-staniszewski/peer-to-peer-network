@@ -169,3 +169,8 @@ class Coordinator:
         with remote_state_lock:
             self.remote_state.remove_from_others_files(filename=payload.file_name, address=payload.ip_address,
                                                        port=payload.port)
+
+    def remove_all_local_files(self):
+        print(f'INFO | Removing all own files!')
+        with local_state_lock:
+            self.local_state.remove_all_files()

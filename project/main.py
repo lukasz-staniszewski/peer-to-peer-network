@@ -44,7 +44,7 @@ def print_interface():
     print(s)
 
 
-if __name__ == '__main__':
+def main():
     config = configparser.ConfigParser()
     config.read("conf_log/conf.ini")
 
@@ -111,10 +111,13 @@ if __name__ == '__main__':
         # 7. SHUTDOWN NODE & SEND BROADCAST [NORS TEST]
         elif usr_input == 7:
             coordinator.send_nors()
-            with local_state_lock:
-                coordinator.local_state.remove_all_files()
-            sys.exit(0)
+            coordinator.remove_all_local_files()
+            os._exit(0)
 
         # 8. GET OTHERS FILES
         elif usr_input == 8:
             coordinator.get_others_files()
+
+
+if __name__ == '__main__':
+    main()
