@@ -27,7 +27,6 @@ class RemoteStateModule:
     def remove_node_from_others_files(self, address, port):
         keys_to_delete = []
         for key, val in self.others_files.items():
-            print(val)
             print(f'INFO | REMOTE STATE | Want to remove: {(address, port)}')
             if (address, port) in val:
                 if len(val) == 1:

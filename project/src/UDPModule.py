@@ -1,10 +1,8 @@
 import threading
 import socket
 
+from project.src.Coordinator import remote_state_lock
 
-hostname = socket.gethostname()
-local_ip = socket.gethostbyname("192.168.204.128")
-address = local_ip
 UDP_PORT = 8888
 BUFFER_SIZE = 1024
 UDP_PERMITTED_MESS = ['GETS', 'NWRS', 'RMRS', 'NORS', 'SKIP']
@@ -12,7 +10,7 @@ UDP_PERMITTED_MESS = ['GETS', 'NWRS', 'RMRS', 'NORS', 'SKIP']
 
 class UDPModule:
 
-    def __init__(self, addr=address,  udp_port=UDP_PORT, buffer_size=BUFFER_SIZE, permited_cmds=UDP_PERMITTED_MESS):
+    def __init__(self, addr,  udp_port=UDP_PORT, buffer_size=BUFFER_SIZE, permited_cmds=UDP_PERMITTED_MESS):
         self.UDP_PORT = udp_port
         self.BUFFER_SIZE = buffer_size
         self.address = addr
@@ -31,13 +29,12 @@ class UDPModule:
         print("INFO | SERVER UDP | Broadcast sent!")
 
     def udp_listener(self, coordinator):
-        lock = threading.Lock()
         print('INFO | SERVER UDP | UDP Listener is running')
         while True:
             m = self.udp_socket.recv(1024)
-            command, payload = coordinator.deserialize(m)
+            command, payload = coordinator.deserialize_udp(m)
             # ignoring own broadcast
-            if payload.ip_address == address:
+            if payload.ip_address == self.address:
                 command = 'SKIP'
                 print('INFO | SERVER UDP | Ignoring own broadcast!')
 
@@ -50,7 +47,7 @@ class UDPModule:
                 try:
                     coordinator.send_ndst(add, port)
                 except Exception as e:
-                    print('ERROR | SERVER UDP | Failed to send data')
+                    print(f'ERROR | SERVER UDP | Failed to send data -> {e}')
 
             # node share new file
             elif command == 'NWRS':
@@ -58,7 +55,7 @@ class UDPModule:
                 add = payload.ip_address
                 port = payload.port
                 filename = payload.file_name
-                with lock:
+                with remote_state_lock:
                     coordinator.remote_state.add_to_others_files(filename, add, port)
                 print(f'INFO | SERVER UDP | GOT NWRS BROADCAST | Uploaded: {filename}')
 
@@ -67,7 +64,7 @@ class UDPModule:
                 add = payload.ip_address
                 port = payload.port
                 filename = payload.file_name
-                with lock:
+                with remote_state_lock:
                     coordinator.remote_state.remove_from_others_files(filename, add, port)
                 print(f'INFO | SERVER UDP | GOT RMRS BROADCAST | Deleted: {filename}')
 
@@ -76,7 +73,7 @@ class UDPModule:
                 print(f'INFO | SERVER UDP | GOT NORS BROADCAST')
                 add = payload.ip_address
                 port = payload.port
-                with lock:
+                with remote_state_lock:
                     coordinator.remote_state.remove_node_from_others_files(add, port)
 
             if command not in UDP_PERMITTED_MESS:

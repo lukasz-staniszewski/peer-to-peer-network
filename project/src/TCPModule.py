@@ -1,5 +1,7 @@
 import socket
 import threading
+
+from project.src.Coordinator import local_state_lock, remote_state_lock
 from project.src.DataDeserializer import DataDeserializer
 
 LISTEN_PORT = 2115
@@ -22,11 +24,7 @@ class TCPModule:
 
     def prepare_socket_send(self, address, port):
         send_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            send_socket.connect((address, port))
-        except Exception as e:
-            print(f'ERROR | SERVER TCP | Can\'t establish a connection with {address, port}')
-
+        send_socket.connect((address, port))
         return send_socket
 
     def send_data(self, socket_connection, data):
@@ -45,6 +43,7 @@ class TCPModule:
             try:
                 msg_data = socket_connection.recv(self.BUFFER_SIZE)
             except Exception as e:
+                print("INFO | SERVER TCP | Error while receiving data!")
                 socket_connection.close()
                 return e
             if not msg_data:
@@ -67,16 +66,30 @@ class TCPModule:
             print("ERROR | SERVER TCP | Cant read data! " + str(data))
             return
 
-        command, payload = data_decoder.deserialize(data)
+        try:
+            command, payload = data_decoder.deserialize_tcp(data)
+        except Exception as e:
+            print(f"ERROR | SERVER TCP | {e} - wrong hash, download abandoned!")
+            coordinator.remove
+            socket_connection.close()
+            print(
+                "INFO | SERVER TCP | Disconnection of "
+                + str(client_address[0])
+                + ":"
+                + str(client_address[1])
+            )
+            return
+
 
         if command == 'GETF':
-            print('INFO | SERVER TCP | GETF command received')
-            if coordinator.local_state.get_local_file(payload.file_name) is None:
-                print(f'WARNING | COORDINATOR | LOCAL STATE | FILE {payload.file_name} NOT FOUND, SENDING DECF!')
-                coordinator.send_decf(payload)
-            else:
-                print(f'INFO | COORDINATOR | LOCAL STATE | FILE {payload.file_name} FOUND, SENDING FILE!')
-                coordinator.send_file(payload)
+            with local_state_lock:
+                print('INFO | SERVER TCP | GETF command received')
+                if coordinator.local_state.get_local_file(payload.file_name) is None:
+                    print(f'WARNING | COORDINATOR | LOCAL STATE | FILE {payload.file_name} NOT FOUND, SENDING DECF!')
+                    coordinator.send_decf(payload)
+                else:
+                    print(f'INFO | COORDINATOR | LOCAL STATE | FILE {payload.file_name} FOUND, SENDING FILE!')
+                    coordinator.send_file(payload)
 
         elif command == "FILE":
             print('INFO | SERVER TCP | FILE command received')
@@ -89,7 +102,8 @@ class TCPModule:
 
         elif command == 'NDST':
             print('INFO | SERVER TCP | NDST command received')
-            coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
+            with remote_state_lock:
+                coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
             coordinator.add_other_files(payload)
             print(f'INFO | SERVER TCP | State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')
 

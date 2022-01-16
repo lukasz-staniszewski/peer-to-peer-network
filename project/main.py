@@ -1,16 +1,14 @@
 import os.path
 import sys
 import threading
-import time
 from src.TCPModule import TCPModule
 from src.UDPModule import UDPModule
-from src.Coordinator import Coordinator
+from src.Coordinator import Coordinator, local_state_lock, remote_state_lock
 from src.DataGenerator import DataGenerator
 from File import File
 import socket
 
 hostname = socket.gethostname()
-# local_ip = socket.gethostbyname(hostname + ".local")
 local_ip = socket.gethostbyname("192.168.204.128")
 
 address = local_ip
@@ -34,7 +32,7 @@ def print_interface():
 
 
 if __name__ == '__main__':
-    udp_module = UDPModule()
+    udp_module = UDPModule(addr=local_ip)
     tcp_module = TCPModule()
     coordinator = Coordinator(address, UDP_PORT, udp_module, TCP_PORT, tcp_module)
 
@@ -69,10 +67,12 @@ if __name__ == '__main__':
             coordinator.remove_local_file(file_name_remove)
         # 3. SEE YOUR LOCAL FILES
         elif usr_input == 3:
-            print(coordinator.local_state.my_files)
+            with local_state_lock:
+                print(coordinator.local_state.my_files)
         # 4. SEE OTHERS FILES
         elif usr_input == 4:
-            print(coordinator.remote_state.others_files)
+            with remote_state_lock:
+                print(coordinator.remote_state.others_files)
         # 5. DOWNLOAD FILE [GETF TEST]
         elif usr_input == 5:
             file_name_download = str(input("FILENAME TO DOWNLOAD: "))
@@ -83,8 +83,9 @@ if __name__ == '__main__':
         # 7. SHUTDOWN NODE & SEND BROADCAST [NORS TEST]
         elif usr_input == 7:
             coordinator.send_nors()
-            coordinator.local_state.remove_all_files()
-            #sys.exit(0)
+            with local_state_lock:
+                coordinator.local_state.remove_all_files()
+            sys.exit(0)
         # 8. GET OTHERS FILES
         elif usr_input == 8:
             coordinator.get_others_files()
