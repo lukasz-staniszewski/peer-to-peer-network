@@ -7,6 +7,7 @@ from src.Coordinator import Coordinator, local_state_lock, remote_state_lock
 from src.DataGenerator import DataGenerator
 from File import File
 import socket
+import logging
 
 hostname = socket.gethostname()
 local_ip = socket.gethostbyname("192.168.204.128")
@@ -15,6 +16,13 @@ address = local_ip
 UDP_PORT = 8888
 TCP_PORT = 2115
 BUFFER_SIZE = 1024
+
+logging.basicConfig(
+    level=logging.INFO,
+    filename='node.log',
+    format='%(asctime)s:%(levelname)s:%(message)s',
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
 
 
 def print_interface():
@@ -50,6 +58,7 @@ if __name__ == '__main__':
         try:
             usr_input = int(input('OPERATION: '))
         except ValueError:
+            logging.warning("Wrong user input!")
             print("WRONG COMMAND!")
             continue
         # usr_input = int(input('OPERATION: '))
@@ -58,8 +67,10 @@ if __name__ == '__main__':
             file_name = str(input("FILENAME: "))
             file_path = str(input("FILEPATH: "))
             if os.path.isfile(file_path):
+                logging.info(f"Adding file to local resources. {file_name, file_path}")
                 coordinator.add_local_file(File(filename=file_name, path=file_path))
             else:
+                logging.warning("File with such path doesnt exists!")
                 print("File with such path doesnt exists!")
         # 2. REMOVE FILE [RMRS TEST]
         elif usr_input == 2:
@@ -68,10 +79,12 @@ if __name__ == '__main__':
         # 3. SEE YOUR LOCAL FILES
         elif usr_input == 3:
             with local_state_lock:
+                logging.info(f"Your local files -> {coordinator.local_state.my_files}")
                 print(coordinator.local_state.my_files)
         # 4. SEE OTHERS FILES
         elif usr_input == 4:
             with remote_state_lock:
+                logging.info(f"See other files: {coordinator.remote_state.others_files}")
                 print(coordinator.remote_state.others_files)
         # 5. DOWNLOAD FILE [GETF TEST]
         elif usr_input == 5:
