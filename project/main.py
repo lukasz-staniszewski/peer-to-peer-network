@@ -10,7 +10,6 @@ from File import File
 import socket
 
 hostname = socket.gethostname()
-# local_ip = socket.gethostbyname(hostname + ".local")
 local_ip = socket.gethostbyname("192.168.204.130")
 
 address = local_ip
@@ -34,7 +33,7 @@ def print_interface():
 
 
 if __name__ == '__main__':
-    udp_module = UDPModule()
+    udp_module = UDPModule(addr=local_ip)
     tcp_module = TCPModule()
     coordinator = Coordinator(address, UDP_PORT, udp_module, TCP_PORT, tcp_module)
 
@@ -84,7 +83,7 @@ if __name__ == '__main__':
         elif usr_input == 7:
             coordinator.send_nors()
             coordinator.local_state.remove_all_files()
-            #sys.exit(0)
+            sys.exit(0)
         # 8. GET OTHERS FILES
         elif usr_input == 8:
             coordinator.get_others_files()

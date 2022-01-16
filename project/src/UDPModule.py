@@ -2,9 +2,6 @@ import threading
 import socket
 
 
-hostname = socket.gethostname()
-local_ip = socket.gethostbyname("192.168.204.130")
-address = local_ip
 UDP_PORT = 8888
 BUFFER_SIZE = 1024
 UDP_PERMITTED_MESS = ['GETS', 'NWRS', 'RMRS', 'NORS', 'SKIP']
@@ -12,7 +9,7 @@ UDP_PERMITTED_MESS = ['GETS', 'NWRS', 'RMRS', 'NORS', 'SKIP']
 
 class UDPModule:
 
-    def __init__(self, addr=address,  udp_port=UDP_PORT, buffer_size=BUFFER_SIZE, permited_cmds=UDP_PERMITTED_MESS):
+    def __init__(self, addr,  udp_port=UDP_PORT, buffer_size=BUFFER_SIZE, permited_cmds=UDP_PERMITTED_MESS):
         self.UDP_PORT = udp_port
         self.BUFFER_SIZE = buffer_size
         self.address = addr
@@ -37,7 +34,7 @@ class UDPModule:
             m = self.udp_socket.recv(1024)
             command, payload = coordinator.deserialize_udp(m)
             # ignoring own broadcast
-            if payload.ip_address == address:
+            if payload.ip_address == self.address:
                 command = 'SKIP'
                 print('INFO | SERVER UDP | Ignoring own broadcast!')
 
