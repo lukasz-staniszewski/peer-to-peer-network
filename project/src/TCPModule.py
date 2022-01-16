@@ -26,6 +26,7 @@ class TCPModule:
             send_socket.connect((address, port))
         except Exception as e:
             print(f'ERROR | SERVER TCP | Can\'t establish a connection with {address, port}')
+            raise e
 
         return send_socket
 

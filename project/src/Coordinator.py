@@ -63,15 +63,21 @@ class Coordinator:
         self.udp_module.send_broadcast(data)
 
     def perform_send(self, address, port, data):
-        send_socket = self.tcp_module.prepare_socket_send(address, port)
-        threading.Thread(
-            target=self.tcp_module.send_data,
-            args=(
-                send_socket,
-                data,
-            ),
-            daemon=True,
-        ).start()
+        try:
+            send_socket = self.tcp_module.prepare_socket_send(address, port)
+            threading.Thread(
+                target=self.tcp_module.send_data,
+                args=(
+                    send_socket,
+                    data,
+                ),
+                daemon=True,
+            ).start()
+
+        except Exception:
+            print(f'ERROR | SERVER TCP | Can\'t establish a connection with {address, port}')
+            self.remote_state.remove_node_from_others_files(address, port)
+
 
     def send_ndst(self, addr, port):
         print(f"INFO | COORDINATOR | STARTING SENDING NDST TO {addr}:{port}")
@@ -90,6 +96,8 @@ class Coordinator:
         command, payload = self.struct_preparation.prepare_file(self.address, self.tcp_port, file.name, data)
         data = self.serialize_tcp(command, payload)
         self.perform_send(address=addr, port=port, data=data)
+
+
 
     def send_decf(self, payload):
         print(f"INFO | COORDINATOR | STARTING SENDING DECF OF {payload.file_name} TO {payload.ip_address}:{payload.port}")
