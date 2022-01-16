@@ -14,7 +14,7 @@ class DataDeserializer:
         hash = data[4:36]
         payload = data[36:]
 
-        if self.validator.validate_hash(hash=hash, data=payload):
+        if self.validator.validate_hash(inp_hash=hash, data=payload):
             try:
                 payload = pickle.loads(payload)
             except pickle.UnpicklingError:

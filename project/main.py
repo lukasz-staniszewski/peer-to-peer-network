@@ -4,28 +4,33 @@ import threading
 from src.TCPModule import TCPModule
 from src.UDPModule import UDPModule
 from src.Coordinator import Coordinator, local_state_lock, remote_state_lock
-from src.DataGenerator import DataGenerator
 from File import File
 import socket
 import logging
+import configparser
 
-hostname = socket.gethostname()
-local_ip = socket.gethostbyname("192.168.204.128")
 
-address = local_ip
-UDP_PORT = 8888
-TCP_PORT = 2115
-BUFFER_SIZE = 1024
+config = configparser.ConfigParser()
+config.read("conf_log/conf.ini")
 
 logging.basicConfig(
     level=logging.INFO,
-    filename='node.log',
+    filename='conf_log/node.log',
     format='%(asctime)s:%(levelname)s:%(message)s',
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 
+# hostname = socket.gethostname()
+# local_ip = socket.gethostbyname(config['NET']['local_ip'])
+# UDP_PORT = config['UDP']['listen_port']
+# TCP_PORT = config['TCP']['listen_port']
+
+
 def print_interface():
+    """
+    Function prints user interface
+    """
     s = """
     1. ADD FILE
     2. REMOVE FILE
@@ -40,19 +45,23 @@ def print_interface():
 
 
 if __name__ == '__main__':
-    udp_module = UDPModule(addr=local_ip)
-    tcp_module = TCPModule()
-    coordinator = Coordinator(address, UDP_PORT, udp_module, TCP_PORT, tcp_module)
+    config = configparser.ConfigParser()
+    config.read("conf_log/conf.ini")
+
+    udp_module = UDPModule(address=config['NET']['local_ip'], udp_port=int(config['UDP']['listen_port']),
+                           buffer_size=int(config['UDP']['buffer_size']), permitted_cmds=config['UDP']['permitted_messages'])
+    tcp_module = TCPModule(listen_address=config['TCP']['listen_address'], listen_port=int(config['TCP']['listen_port']),
+                           buffer_size=int(config['TCP']['buffer_size']))
+    coordinator = Coordinator(address=config['NET']['local_ip'], udp_port=int(config['UDP']['listen_port']),
+                              udp_module=udp_module, tcp_port=int(config['TCP']['listen_port']), tcp_module=tcp_module)
 
     t_udp = threading.Thread(target=udp_module.start_listen, args=[coordinator])
     t_udp.start()
-
     t_tcp = threading.Thread(target=tcp_module.start_listen, args=[coordinator])
     t_tcp.start()
 
     coordinator.get_others_files()
 
-    data_gen = DataGenerator()
     while True:
         print_interface()
         try:
@@ -61,44 +70,51 @@ if __name__ == '__main__':
             logging.warning("Wrong user input!")
             print("WRONG COMMAND!")
             continue
-        # usr_input = int(input('OPERATION: '))
+
         # 1. ADD FILE [NWRS TEST]
         if usr_input == 1:
-            file_name = str(input("FILENAME: "))
-            file_path = str(input("FILEPATH: "))
+            file_name = str(input("FILE NAME: "))
+            file_path = str(input("FILE PATH: "))
             if os.path.isfile(file_path):
                 logging.info(f"Adding file to local resources. {file_name, file_path}")
                 coordinator.add_local_file(File(filename=file_name, path=file_path))
             else:
                 logging.warning("File with such path doesnt exists!")
                 print("File with such path doesnt exists!")
+
         # 2. REMOVE FILE [RMRS TEST]
         elif usr_input == 2:
             file_name_remove = str(input("FILENAME TO REMOVE: "))
             coordinator.remove_local_file(file_name_remove)
+
         # 3. SEE YOUR LOCAL FILES
         elif usr_input == 3:
             with local_state_lock:
                 logging.info(f"Your local files -> {coordinator.local_state.my_files}")
                 print(coordinator.local_state.my_files)
+
         # 4. SEE OTHERS FILES
         elif usr_input == 4:
             with remote_state_lock:
                 logging.info(f"See other files: {coordinator.remote_state.others_files}")
                 print(coordinator.remote_state.others_files)
+
         # 5. DOWNLOAD FILE [GETF TEST]
         elif usr_input == 5:
             file_name_download = str(input("FILENAME TO DOWNLOAD: "))
             coordinator.download_file(file_name_download)
+
         # 6. NODE INFO
         elif usr_input == 6:
             coordinator.print_info()
+
         # 7. SHUTDOWN NODE & SEND BROADCAST [NORS TEST]
         elif usr_input == 7:
             coordinator.send_nors()
             with local_state_lock:
                 coordinator.local_state.remove_all_files()
             sys.exit(0)
+
         # 8. GET OTHERS FILES
         elif usr_input == 8:
             coordinator.get_others_files()

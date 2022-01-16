@@ -1,9 +1,9 @@
 import pickle
 from .Validator import Validator
 
+
 class DataSerializer:
     def __init__(self):
-        # CODE SMELL
         self.EOD = '\4'.encode()
         self.validator = Validator()
 
