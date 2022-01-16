@@ -1,5 +1,7 @@
 import socket
 import threading
+
+from project.src.Coordinator import local_state_lock, remote_state_lock
 from project.src.DataDeserializer import DataDeserializer
 
 LISTEN_PORT = 2115
@@ -80,13 +82,14 @@ class TCPModule:
 
 
         if command == 'GETF':
-            print('INFO | SERVER TCP | GETF command received')
-            if coordinator.local_state.get_local_file(payload.file_name) is None:
-                print(f'WARNING | COORDINATOR | LOCAL STATE | FILE {payload.file_name} NOT FOUND, SENDING DECF!')
-                coordinator.send_decf(payload)
-            else:
-                print(f'INFO | COORDINATOR | LOCAL STATE | FILE {payload.file_name} FOUND, SENDING FILE!')
-                coordinator.send_file(payload)
+            with local_state_lock:
+                print('INFO | SERVER TCP | GETF command received')
+                if coordinator.local_state.get_local_file(payload.file_name) is None:
+                    print(f'WARNING | COORDINATOR | LOCAL STATE | FILE {payload.file_name} NOT FOUND, SENDING DECF!')
+                    coordinator.send_decf(payload)
+                else:
+                    print(f'INFO | COORDINATOR | LOCAL STATE | FILE {payload.file_name} FOUND, SENDING FILE!')
+                    coordinator.send_file(payload)
 
         elif command == "FILE":
             print('INFO | SERVER TCP | FILE command received')
@@ -99,7 +102,8 @@ class TCPModule:
 
         elif command == 'NDST':
             print('INFO | SERVER TCP | NDST command received')
-            coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
+            with remote_state_lock:
+                coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
             coordinator.add_other_files(payload)
             print(f'INFO | SERVER TCP | State of node with address {(payload.ip_address, payload.port)} is: {payload.data}')
 

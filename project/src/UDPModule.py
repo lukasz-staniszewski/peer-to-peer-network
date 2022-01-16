@@ -1,6 +1,7 @@
 import threading
 import socket
 
+from project.src.Coordinator import remote_state_lock
 
 UDP_PORT = 8888
 BUFFER_SIZE = 1024
@@ -28,7 +29,6 @@ class UDPModule:
         print("INFO | SERVER UDP | Broadcast sent!")
 
     def udp_listener(self, coordinator):
-        lock = threading.Lock()
         print('INFO | SERVER UDP | UDP Listener is running')
         while True:
             m = self.udp_socket.recv(1024)
@@ -55,7 +55,7 @@ class UDPModule:
                 add = payload.ip_address
                 port = payload.port
                 filename = payload.file_name
-                with lock:
+                with remote_state_lock:
                     coordinator.remote_state.add_to_others_files(filename, add, port)
                 print(f'INFO | SERVER UDP | GOT NWRS BROADCAST | Uploaded: {filename}')
 
@@ -64,7 +64,7 @@ class UDPModule:
                 add = payload.ip_address
                 port = payload.port
                 filename = payload.file_name
-                with lock:
+                with remote_state_lock:
                     coordinator.remote_state.remove_from_others_files(filename, add, port)
                 print(f'INFO | SERVER UDP | GOT RMRS BROADCAST | Deleted: {filename}')
 
@@ -73,7 +73,7 @@ class UDPModule:
                 print(f'INFO | SERVER UDP | GOT NORS BROADCAST')
                 add = payload.ip_address
                 port = payload.port
-                with lock:
+                with remote_state_lock:
                     coordinator.remote_state.remove_node_from_others_files(add, port)
 
             if command not in UDP_PERMITTED_MESS:
