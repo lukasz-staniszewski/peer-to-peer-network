@@ -3,6 +3,4 @@ class File:
         self.name = filename
         self.path = path
 
-    def __repr__(self):
-        return self.name
 

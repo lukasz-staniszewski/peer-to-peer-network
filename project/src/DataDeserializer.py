@@ -5,11 +5,22 @@ from .Validator import Validator
 
 
 class DataDeserializer:
-
+    """
+    Class represents deserializer of data.
+    """
     def __init__(self):
+        """
+        Deserializer constructor.
+        """
         self.validator = Validator()
 
     def deserialize_tcp(self, data):
+        """
+        Performs deserialization of given tcp data.
+
+        :param data: data to deserialize
+        :raises Exception: if hash is incorrect or can't unpickle
+        """
         command = data[0:4].decode().upper()
         hash = data[4:36]
         payload = data[36:]
@@ -26,6 +37,12 @@ class DataDeserializer:
             raise Exception("Deserialization found hash not correct")
 
     def deserialize_udp(self, data):
+        """
+        Performs deserialization of udp data.
+
+        :param data: udp data to deserialize
+        :return: tuple of command and deserialized payload
+        """
         command = data[0:4].decode().upper()
         payload = data[4:]
         payload = pickle.loads(payload)
