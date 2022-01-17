@@ -43,7 +43,10 @@ def main():
     udp_module = UDPModule(address=config['NET']['local_ip'], udp_port=int(config['UDP']['listen_port']),
                            buffer_size=int(config['UDP']['buffer_size']), permitted_cmds=config['UDP']['permitted_messages'])
     tcp_module = TCPModule(listen_address=config['TCP']['listen_address'], listen_port=int(config['TCP']['listen_port']),
-                           buffer_size=int(config['TCP']['buffer_size']))
+                           buffer_size=int(config['TCP']['buffer_size']),
+                           connection_close_simulation=int(config['TCP']['connection_close_simulation']),
+                           additional_bytes_simulation=int(config['TCP']['additional_bytes_simulation']),
+                           max_iterations=int(config['TCP']['max_iterations']))
     coordinator = Coordinator(address=config['NET']['local_ip'], udp_port=int(config['UDP']['listen_port']),
                               udp_module=udp_module, tcp_port=int(config['TCP']['listen_port']), tcp_module=tcp_module)
 

@@ -19,7 +19,7 @@ class RemoteStateModule:
         :param address: address from which file is
         :param port: port from which file is
         """
-        if filename in self.others_files.keys():
+        if str(filename) in self.others_files.keys():
             curr_files = self.others_files[filename]
             if (address, port) not in self.others_files[filename]:
                 curr_files.append((address, port))
@@ -56,14 +56,14 @@ class RemoteStateModule:
         """
         keys_to_delete = []
         for key, val in self.others_files.items():
-            logging.info(f'INFO | REMOTE STATE | Want to remove: {(address, port)}')
+            logging.info(f'REMOTE STATE | Want to remove: {(address, port)}')
             if (address, port) in val:
                 if len(val) == 1:
                     keys_to_delete.append(key)
                 else:
                     val.remove((address, port))
                 print(f'INFO | From remote state removing {(address, port)}')
-                logging.info(f'INFO | REMOTE STATE | removing {(address, port)}')
+                logging.info(f'REMOTE STATE | removing {(address, port)}')
 
         for key in keys_to_delete:
             self.others_files.pop(key)
