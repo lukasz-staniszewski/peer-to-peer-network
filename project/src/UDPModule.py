@@ -4,14 +4,20 @@ import logging
 import ast
 from project.src.Coordinator import remote_state_lock
 
-# UDP_PORT = 8888
-# BUFFER_SIZE = 1024
-# UDP_PERMITTED_MESS = ['GETS', 'NWRS', 'RMRS', 'NORS', 'SKIP']
-
 
 class UDPModule:
-
+    """
+    Represents UDP module.
+    """
     def __init__(self, address,  udp_port, buffer_size, permitted_cmds):
+        """
+        UDPModule constructor.
+
+        :param address: address on which socket listens for broadcasts
+        :param udp_port: port on which socket listens for broadcasts
+        :param buffer_size: size of buffer for receiving data
+        :param permitted_cmds: possible udp commands in messages
+        """
         self.port = udp_port
         self.buffer_size = buffer_size
         self.address = address
@@ -19,19 +25,31 @@ class UDPModule:
         self.udp_socket = None
 
     def create_and_bind_udp_listener(self):
+        """
+        Creates udp socket and binds it.
+        :return: socket
+        """
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('', self.port))
         return sock
 
     def send_broadcast(self, message):
+        """
+        Performs send of single broadcast.
+
+        :param message: message to send
+        """
         server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         server.sendto(message, ('<broadcast>', self.port))
-        # print("INFO | SERVER UDP | Broadcast sent!")
         logging.info("SERVER UDP | Broadcast sent!")
 
     def udp_listener(self, coordinator):
-        # print('INFO | SERVER UDP | UDP Listener is running')
+        """
+        Performs udp listening logic.
+
+        :param coordinator: coordinator object
+        """
         logging.info("SERVER UDP | UDP Listener is running")
         while True:
             message = self.udp_socket.recv(self.buffer_size)
@@ -39,12 +57,10 @@ class UDPModule:
             # ignoring own broadcast
             if payload.ip_address == self.address:
                 command = 'SKIP'
-                # print('INFO | SERVER UDP | Ignoring own broadcast!')
                 logging.info("SERVER UDP | Ignoring own broadcast!")
 
             # send your list to node
             elif command == 'GETS':
-                # print('INFO | SERVER UDP | GOT GETS BROADCAST!')
                 logging.info("SERVER UDP | GOT GETS BROADCAST!")
                 add = payload.ip_address
                 port = payload.port
@@ -57,7 +73,6 @@ class UDPModule:
 
             # node share new file
             elif command == 'NWRS':
-                # print('INFO | SERVER UDP | GOT NWRS BROADCAST!')
                 logging.info(f"SERVER UDP | GOT NWRS BROADCAST!")
                 address = payload.ip_address
                 port = payload.port
@@ -79,7 +94,6 @@ class UDPModule:
 
             # node is now not sharing any files
             elif command == 'NORS':
-                # print(f'INFO | SERVER UDP | GOT NORS BROADCAST')
                 logging.info(f"SERVER UDP | GOT NORS BROADCAST")
                 address = payload.ip_address
                 port = payload.port
@@ -87,9 +101,13 @@ class UDPModule:
                     coordinator.remote_state.remove_node_from_others_files(address, port)
 
             if command not in self.permitted_messages:
-                # print(f'ERROR | SERVER UDP | Unknown command: {command}')
                 logging.warning(f"SERVER UDP | Unknown command: {command}")
 
     def start_listen(self, coordinator):
+        """
+        Performs listening.
+
+        :param coordinator: coordinator of object
+        """
         self.udp_socket = self.create_and_bind_udp_listener()
         self.udp_listener(coordinator)
