@@ -206,7 +206,7 @@ class Coordinator:
         """
         with remote_state_lock:
             addresses = self.remote_state.get_addresses_by_filename(filename)
-        print(f"INFO | DOWNLOADING | Downloading {filename}... from {addresses}")
+        #print(f"INFO | DOWNLOADING | Downloading {filename}... from {addresses}")
         logging.info(f"DOWNLOADING | Downloading {filename}... from {addresses}")
         if addresses is not None:
             send_params = random.choice(addresses)

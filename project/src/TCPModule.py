@@ -10,7 +10,9 @@ class TCPModule:
     """
     Class represents TCP module.
     """
-    def __init__(self, listen_address, listen_port, buffer_size):
+
+    def __init__(self, listen_address, listen_port, buffer_size,
+                 connection_close_simulation=False, additional_bytes_simulation=False, max_iterations=0):
         """
         TCPModule constructor.
 
@@ -22,6 +24,9 @@ class TCPModule:
         self.LISTEN_PORT = listen_port
         self.BUFFER_SIZE = buffer_size
         self.listen_socket = None
+        self.connection_close_simulation = connection_close_simulation
+        self.additional_bytes_simulation = additional_bytes_simulation
+        self.max_iterations = max_iterations
 
     def prepare_socket_listen(self):
         """
@@ -56,6 +61,8 @@ class TCPModule:
         :return: 0 if file sent else exception object
         """
         try:
+            if self.additional_bytes_simulation:
+                data += b'ksiezniczkabalbinka'
             socket_connection.sendall(data)
             print("INFO | FILE SENT!")
             logging.info("SERVER TCP | FILE SENT!")
@@ -73,17 +80,24 @@ class TCPModule:
         :return: data if got data, exception object if error
         """
         data = b''
+        iteration = 0
         while True:
-            try:
-                msg_data = socket_connection.recv(self.BUFFER_SIZE)
-            except Exception as exception:
-                print("ERROR | Error while receiving file!")
-                logging.warning("SERVER TCP | Error while receiving data!")
+            if iteration == self.max_iterations and self.connection_close_simulation:
+                print('Connection closed!')
                 socket_connection.close()
-                return exception
-            if not msg_data:
                 break
-            data += msg_data
+            else:
+                try:
+                    msg_data = socket_connection.recv(self.BUFFER_SIZE)
+                except Exception as exception:
+                    print("ERROR | Error while receiving file!")
+                    logging.warning("SERVER TCP | Error while receiving data!")
+                    socket_connection.close()
+                    return exception
+                if not msg_data:
+                    break
+                data += msg_data
+                iteration += 1
         return data
 
     def listen_service(self, socket_connection, client_address, coordinator):
@@ -119,7 +133,7 @@ class TCPModule:
                 "INFO | SERVER TCP | Disconnection of "
                 + connection_from
             )
-            logging.info("INFO | SERVER TCP | Disconnection of " + connection_from)
+            logging.info("SERVER TCP | Disconnection of " + connection_from)
             return
 
         if command == 'GETF':
@@ -148,7 +162,8 @@ class TCPModule:
                 coordinator.remote_state.remove_node_from_others_files(payload.ip_address, payload.port)
                 coordinator.add_other_files(payload)
             print(f'INFO | Got state of node with address {(payload.ip_address, payload.port)}: {payload.data}')
-            logging.info(f"SERVER TCP | State of node with address {(payload.ip_address, payload.port)} is: {payload.data}")
+            logging.info(
+                f"SERVER TCP | State of node with address {(payload.ip_address, payload.port)} is: {payload.data}")
         else:
             logging.warning(f"SERVER TCP | UNKNOWN COMMAND: {command}")
 
