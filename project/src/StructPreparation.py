@@ -5,6 +5,9 @@ from project.structures.TCP_STR_INFO import TCP_STR_INFO
 
 
 class StructPreparation:
+    """
+    Class prepares structures for payloads.
+    """
 
     def prepare_ndst(self, addr, port, ndst_data):
         return 'NDST', TCP_STR_CONT(addr, port, None, ndst_data)

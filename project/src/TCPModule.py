@@ -5,31 +5,56 @@ import logging
 from project.src.Coordinator import local_state_lock, remote_state_lock
 from project.src.DataDeserializer import DataDeserializer
 
-# LISTEN_PORT = 2115
-# BUFFER_SIZE = 1024
-
 
 class TCPModule:
+    """
+    Class represents TCP module.
+    """
     def __init__(self, listen_address, listen_port, buffer_size):
+        """
+        TCPModule constructor.
+
+        :param listen_address: address on which module listens
+        :param listen_port: port on which tcp module is listening
+        :param buffer_size: size of buffer for receiving messages
+        """
         self.LISTEN_ADDRESS = listen_address
         self.LISTEN_PORT = listen_port
         self.BUFFER_SIZE = buffer_size
         self.listen_socket = None
 
     def prepare_socket_listen(self):
+        """
+        Prepares socket for listening.
+        :return: socket for listening
+        """
         listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         listen_socket.bind((self.LISTEN_ADDRESS, self.LISTEN_PORT))
         listen_socket.listen(5)
-        # print("INFO | SERVER TCP | Server listening at port " + str(self.LISTEN_PORT))
         logging.info("SERVER TCP | Server listening at port " + str(self.LISTEN_PORT))
         return listen_socket
 
     def prepare_socket_send(self, address, port):
+        """
+        Prepares socket with connection to specific address and port.
+
+        :param address: address to which socket will connect
+        :param port: port to which socket will connect
+        :return: connected socket
+        """
         send_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         send_socket.connect((address, port))
         return send_socket
 
     def send_data(self, socket_connection, data):
+        """
+        Performs send of data on specific socket.
+
+        :param socket_connection: socket for connection
+        :param data: data to send
+
+        :return: 0 if file sent else exception object
+        """
         try:
             socket_connection.sendall(data)
             print("INFO | FILE SENT!")
@@ -41,6 +66,12 @@ class TCPModule:
             return exception
 
     def receive_data(self, socket_connection):
+        """
+        Performs receiving of data on given socket.
+
+        :param socket_connection: socket with connection
+        :return: data if
+        """
         data = b''
         while True:
             try:
