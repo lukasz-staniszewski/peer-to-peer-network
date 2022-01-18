@@ -19,6 +19,9 @@ class TCPModule:
         :param listen_address: address on which module listens
         :param listen_port: port on which tcp module is listening
         :param buffer_size: size of buffer for receiving messages
+        :param connection_close_simulation: if true, simulation of connection close is performed
+        :param additional_bytes_simulation: if true, simulation of adding additional bytes
+        :param max_iterations: number of max iterations used in simulation, if connection_close_simulation is True
         """
         self.LISTEN_ADDRESS = listen_address
         self.LISTEN_PORT = listen_port
