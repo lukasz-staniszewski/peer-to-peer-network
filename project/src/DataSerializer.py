@@ -1,5 +1,5 @@
 import pickle
-from .Validator import Validator
+from project.src.Validator import Validator
 
 
 class DataSerializer:

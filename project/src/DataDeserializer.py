@@ -1,7 +1,7 @@
 import pickle
 import logging
 
-from .Validator import Validator
+from project.src.Validator import Validator
 
 
 class DataDeserializer:

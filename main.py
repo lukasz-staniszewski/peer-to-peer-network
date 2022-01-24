@@ -9,7 +9,7 @@ import configparser
 
 
 config = configparser.ConfigParser()
-config.read("conf_log/conf.ini")
+config.read("project/conf_log/conf.ini")
 
 logging.basicConfig(
     level=logging.INFO,

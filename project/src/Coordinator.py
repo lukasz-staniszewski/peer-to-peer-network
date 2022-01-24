@@ -1,12 +1,12 @@
 import threading
 import logging
 
-from .DataDeserializer import DataDeserializer
-from .DataSerializer import DataSerializer
-from .StructPreparation import StructPreparation
-from .LocalStateModule import LocalStateModule
-from .RemoteStateModule import RemoteStateModule
-from .FileCoordinator import FileCoordinator
+from project.src.DataDeserializer import DataDeserializer
+from project.src.DataSerializer import DataSerializer
+from project.src.StructPreparation import StructPreparation
+from project.src.LocalStateModule import LocalStateModule
+from project.src.RemoteStateModule import RemoteStateModule
+from project.src.FileCoordinator import FileCoordinator
 from project.File import File
 import random
 
@@ -108,8 +108,7 @@ class Coordinator:
         :param payload: payload with node state
         """
         for filename in payload.data:
-            with remote_state_lock:
-                self.remote_state.add_to_others_files(filename, payload.ip_address, payload.port)
+            self.remote_state.add_to_others_files(filename, payload.ip_address, payload.port)
 
     def get_others_files(self):
         """
@@ -169,8 +168,7 @@ class Coordinator:
         logging.info(f"COORDINATOR | STARTING SENDING {payload.file_name} TO {payload.ip_address}:{payload.port}")
         addr = payload.ip_address
         port = payload.port
-        with local_state_lock:
-            file = self.local_state.get_local_file(payload.file_name)
+        file = self.local_state.get_local_file(payload.file_name)
         file_coordinator = FileCoordinator()
         data = file_coordinator.get_data_from_file(file_path=file.path)
         command, payload = self.struct_preparation.prepare_file(self.address, self.tcp_port, file.name, data)

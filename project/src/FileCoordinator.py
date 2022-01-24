@@ -11,7 +11,7 @@ class FileCoordinator:
         FileCoordinator constructor.
         """
         config = configparser.ConfigParser()
-        config.read("conf_log/conf.ini")
+        config.read("project/conf_log/conf.ini")
         self.files_folder_path = config['COORDINATOR']['file_path']
 
     def save_to_file(self, file_name, file_data):

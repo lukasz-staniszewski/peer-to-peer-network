@@ -85,6 +85,7 @@ class TCPModule:
         data = b''
         iteration = 0
         while True:
+            print(".")
             if iteration == self.max_iterations and self.connection_close_simulation:
                 print('Connection closed!')
                 socket_connection.close()
