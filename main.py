@@ -1,9 +1,9 @@
 import os.path
 import threading
-from src.TCPModule import TCPModule
-from src.UDPModule import UDPModule
-from src.Coordinator import Coordinator, local_state_lock, remote_state_lock
-from File import File
+from project.src.TCPModule import TCPModule
+from project.src.UDPModule import UDPModule
+from project.src.Coordinator import Coordinator, local_state_lock, remote_state_lock
+from project.File import File
 import logging
 import configparser
 
@@ -13,7 +13,7 @@ config.read("conf_log/conf.ini")
 
 logging.basicConfig(
     level=logging.INFO,
-    filename='conf_log/node.log',
+    filename='project/conf_log/node.log',
     format='%(asctime)s:%(levelname)s:%(message)s',
     datefmt="%Y-%m-%d %H:%M:%S"
 )
@@ -38,7 +38,7 @@ def print_interface():
 
 def main():
     config = configparser.ConfigParser()
-    config.read("conf_log/conf.ini")
+    config.read("project/conf_log/conf.ini")
 
     udp_module = UDPModule(address=config['NET']['local_ip'], udp_port=int(config['UDP']['listen_port']),
                            buffer_size=int(config['UDP']['buffer_size']), permitted_cmds=config['UDP']['permitted_messages'])
