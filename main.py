@@ -108,7 +108,7 @@ def main():
         elif usr_input == 7:
             coordinator.send_nors()
             coordinator.remove_all_local_files()
-            os._exit(0)
+            os._exit(0) 
 
         # 8. GET OTHERS FILES
         elif usr_input == 8:
